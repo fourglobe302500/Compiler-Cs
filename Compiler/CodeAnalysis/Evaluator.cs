@@ -6,12 +6,12 @@ namespace Compiler.CodeAnalysis
 {
   internal sealed class Evaluator
   {
-    private readonly Dictionary<string, object> _variables;
+    private readonly Dictionary<VariableSymbol, object> _variables;
     private readonly BoundExpression _root;
 
     public Evaluator(
       BoundExpression root,
-      System.Collections.Generic.Dictionary<string, object> variables)
+      System.Collections.Generic.Dictionary<VariableSymbol, object> variables)
     {
       _root = root;
       _variables = variables;
@@ -26,10 +26,10 @@ namespace Compiler.CodeAnalysis
         case BoundLiteralExpression l:
           return l.Value;
         case BoundVariableExpression v:
-          return _variables[v.Name];
+          return _variables[v.Variable];
         case BoundAssigmentExpression a:
           var value = EvaluateExpression(a.Expression);
-          _variables[a.Name] = value;
+          _variables[a.Variable] = value;
           return value;
         case BoundUnaryExpression u:
           var operand = EvaluateExpression(u.Operand);

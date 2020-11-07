@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Compiler.CodeAnalysis.Syntax;
 
 namespace Compiler.CodeAnalysis.Binding
 {
   internal sealed class Binder
   {
-    private readonly Dictionary<string, object> _variables;
+    private readonly Dictionary<VariableSymbol, object> _variables;
     private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
 
-    public Binder(Dictionary<string, object> variables)
+    public Binder(Dictionary<VariableSymbol, object> variables)
     {
       _variables = variables;
     }
@@ -43,13 +44,14 @@ namespace Compiler.CodeAnalysis.Binding
     private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
     {
       var name = syntax.IdentifierToken.Text;
-      if (!_variables.TryGetValue(name, out var value))
+      var variable = _variables.Keys.FirstOrDefault(v => v.Name == name);
+
+      if (variable == null)
       {
         _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
         return new BoundLiteralExpression(0);
       }
-      var type = value.GetType();
-      return new BoundVariableExpression(name, type);
+      return new BoundVariableExpression(variable);
     }
 
     private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
@@ -57,16 +59,13 @@ namespace Compiler.CodeAnalysis.Binding
       var name = syntax.IdentifierToken.Text;
       var boundExpression = BindExpression(syntax.Expression);
 
-      var defaultValue =
-        boundExpression.Type == typeof(int) ? (object)0
-        : boundExpression.Type == typeof(bool) ? (object)false
-        : null;
-      if (defaultValue == null)
-        throw new Exception($"Unexpected variable type: {boundExpression.Type}.");
+      var existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
+      if (existingVariable != null)
+        _variables.Remove(existingVariable);
+      var variable = new VariableSymbol(name, boundExpression.Type);
+      _variables[variable] = null;
 
-      _variables[name] = defaultValue;
-
-      return new BoundAssigmentExpression(name, boundExpression);
+      return new BoundAssigmentExpression(variable, boundExpression);
     }
 
     private BoundExpression BindUnaryExpression(
