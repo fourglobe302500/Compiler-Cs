@@ -79,17 +79,22 @@ namespace Compiler.CodeAnalysis.Syntax
       return left;
     }
 
-    private ExpressionSyntax ParsePrimaryExpression() => Current.Kind switch
+    private ExpressionSyntax ParsePrimaryExpression()
     {
-      SyntaxKind.OpenParenthesisToken => new ParenthesizedExpressionSyntax(
-        NextToken(),
-        ParseExpression(),
-        MatchToken(SyntaxKind.CloseParenthesisToken)),
-      SyntaxKind.TrueKeyword =>  
-        new LiteralExpressionSyntax(NextToken(), true),
-      SyntaxKind.FalseKeyword => 
-        new LiteralExpressionSyntax(NextToken(), false),
-      _ => new LiteralExpressionSyntax(MatchToken(SyntaxKind.NumberToken))
-    };
+      switch(Current.Kind)
+      {
+        case SyntaxKind.OpenParenthesisToken:
+          return new ParenthesizedExpressionSyntax(
+            NextToken(),
+            ParseExpression(),
+            MatchToken(SyntaxKind.CloseParenthesisToken));
+        case SyntaxKind.TrueKeyword:  
+          return new LiteralExpressionSyntax(NextToken(), true);
+        case SyntaxKind.FalseKeyword: 
+          return new LiteralExpressionSyntax(NextToken(), false);
+        default: 
+          return new LiteralExpressionSyntax(MatchToken(SyntaxKind.NumberToken));
+      }
+    }
   }
 }

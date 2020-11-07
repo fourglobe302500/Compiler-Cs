@@ -79,11 +79,9 @@ namespace Compiler.CodeAnalysis.Syntax
         case '!': return Lookahead == '=' ?
           new SyntaxToken(SyntaxKind.NotEqualsToken, _position += 2, "!=") :
           new SyntaxToken(SyntaxKind.ExclamationToken, _position++, "!");
-        case '=': return Lookahead switch
-        {
-          '=' => new SyntaxToken(SyntaxKind.DoubleEqualsToken, _position += 2, "=="),
-          _ => new SyntaxToken(SyntaxToken.EqualsToken, _position++, "=")
-        };
+        case '=': return Lookahead == '=' ? 
+          new SyntaxToken(SyntaxKind.DoubleEqualsToken, _position += 2, "==") :
+          new SyntaxToken(SyntaxToken.EqualsToken, _position++, "=");
         case '<': return Lookahead == '=' ?
           new SyntaxToken(SyntaxKind.LessOrEqualsThenToken, _position += 2, "<=") :
           new SyntaxToken(SyntaxKind.LessThenToken, _position++, "<");

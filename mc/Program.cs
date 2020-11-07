@@ -3,7 +3,6 @@ using System;
 
 using Compiler.CodeAnalysis;
 using Compiler.CodeAnalysis.Syntax;
-using Compiler.CodeAnalysis.Binding;
 
 namespace Compiler
 {
@@ -32,17 +31,16 @@ namespace Compiler
         }
 
         var syntaxTree = SyntaxTree.Parse(line);
-        var binder = new Binder();
-        var boundExpression = binder.BindExpression(syntaxTree.Root);
-        var diagnostics = 
-          syntaxTree.Diagnostics.Concat(binder.Diagnostics).ToArray();
+        var compilation = new Compilation(syntaxTree);
+        var result = compilation.Evaluate();
+        var diagnostics = result.Diagnostics;
         if (showTree)
         {
           Console.ForegroundColor = ConsoleColor.DarkGray;
           PrettyPrint(syntaxTree.Root);
         }
         if (!diagnostics.Any())
-          Console.WriteLine(new Evaluator(boundExpression).Evaluate);
+          Console.WriteLine(result.Value);
         else
         {
           Console.ForegroundColor = ConsoleColor.DarkRed;

@@ -10,14 +10,18 @@ namespace Compiler.CodeAnalysis.Binding
     public List<string> Diagnostics => _diagnostics;
 
     public BoundExpression BindExpression(ExpressionSyntax syntax) 
-    => syntax.Kind switch
     {
-      SyntaxKind.LiteralExpression => BindLiteralExpression((LiteralExpressionSyntax)syntax),
-      SyntaxKind.UnaryExpression => BindUnaryExpression((UnaryExpressionSyntax)syntax),
-      SyntaxKind.BinaryExpression => BindBinaryExpression((BinaryExpressionSyntax)syntax),
-      SyntaxKind.ParenthesizedExpression => BindExpression(((ParenthesizedExpressionSyntax)syntax).Expression),
-      _ => throw new Exception($"Unaexpected syntax {syntax.Kind}")
-    };
+      if (syntax.Kind == SyntaxKind.LiteralExpression) 
+        return  BindLiteralExpression((LiteralExpressionSyntax)syntax);
+      else if (syntax.Kind == SyntaxKind.UnaryExpression) 
+        return  BindUnaryExpression((UnaryExpressionSyntax)syntax);
+      else if (syntax.Kind == SyntaxKind.BinaryExpression) 
+        return  BindBinaryExpression((BinaryExpressionSyntax)syntax);
+      else if (syntax.Kind == SyntaxKind.ParenthesizedExpression) 
+        return  BindExpression(((ParenthesizedExpressionSyntax)syntax).Expression);
+      else 
+        throw new Exception($"Unaexpected syntax {syntax.Kind}");
+    }
 
     private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax) 
       => new BoundLiteralExpression(syntax.Value ?? 0);
