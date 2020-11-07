@@ -16,17 +16,20 @@ namespace Compiler.CodeAnalysis
       if (node is BoundLiteralExpression l) 
         return l.Value;
       else if (node is BoundUnaryExpression u) 
+      {
+        var operand =  EvaluateExpression(u.Operand);
         switch(u.Op.Kind)
         {
           case BoundUnaryOperatorKind.Indentity: 
-            return (int)EvaluateExpression(u.Operand);
+            return (int)operand;
           case BoundUnaryOperatorKind.Negation:
-            return -(int)EvaluateExpression(u.Operand);
+            return -(int)operand;
           case BoundUnaryOperatorKind.LogicalNegation:
-          return !(bool)EvaluateExpression(u.Operand);
+            return !(bool)operand;
           default: throw new Exception(
             $"Unexpected unary operator {u.Op}");
         }
+      }
       else if (node is BoundBinaryExpression b)
       {
         var left = EvaluateExpression(b.Left);

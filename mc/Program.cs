@@ -43,10 +43,19 @@ namespace Compiler
           Console.WriteLine(result.Value);
         else
         {
-          Console.ForegroundColor = ConsoleColor.DarkRed;
           foreach (var err in diagnostics)
+          {
+            Console.WriteLine();
+            Console.ForegroundColor = ConsoleColor.DarkRed;
             Console.WriteLine(err);
-          Console.ResetColor();
+            Console.ResetColor();
+            Console.Write($"    {line.Substring(0, err.Span.Start)}");
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.Write(line.Substring(err.Span.Start, err.Span.Length));
+            Console.ResetColor();
+            Console.WriteLine(line.Substring(err.Span.End));
+          }
+          Console.WriteLine();
         }
       }
     }

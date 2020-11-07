@@ -47,6 +47,8 @@ namespace Compiler.CodeAnalysis.Binding
         SyntaxKind.PlusToken,
         BoundUnaryOperatorKind.Indentity,
         typeof(int)),
+      
+
     };
 
     public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, Type operandType)
