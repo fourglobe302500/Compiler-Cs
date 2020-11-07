@@ -3,19 +3,16 @@ namespace Compiler.CodeAnalysis.Syntax
   public enum SyntaxKind
   {
     //TODO: 
-    BitWaseAndToken,
-    PipeToken,
-    EqualsToken,
-
     //Tokens
     EndOfFileToken,
     InvalidToken,
-    IndentifierToken,
+    IdentifierToken,
     WhiteSpaceToken,
     NumberToken,
     CloseParenthesisToken,
     OpenParenthesisToken,
     ExclamationToken,
+    AssigmentToken,
 
     //Operators
     PlusToken,
@@ -27,6 +24,8 @@ namespace Compiler.CodeAnalysis.Syntax
 
     //Expressions
     LiteralExpression,
+    NameExpression,
+    AssigmentExpression,
     UnaryExpression,
     BinaryExpression,
     ParenthesizedExpression,

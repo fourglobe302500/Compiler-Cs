@@ -72,16 +72,16 @@ namespace Compiler.CodeAnalysis.Syntax
           SyntaxKind.HatToken, _position++, "^");
         case '|': return Lookahead == '|' ? 
           new SyntaxToken(SyntaxKind.LogicalOrToken, Walk(2), "||") : 
-          new SyntaxToken(SyntaxKind.PipeToken, _position++, "|");
+          new SyntaxToken(SyntaxKind.InvalidToken, _position++, "|");
         case '&': return Lookahead == '&' ? 
           new SyntaxToken(SyntaxKind.LogicalAndToken, Walk(2), "&&") : 
-          new SyntaxToken(SyntaxKind.BitWaseAndToken, _position++, "&");
+          new SyntaxToken(SyntaxKind.InvalidToken, _position++, "&");
         case '!': return Lookahead == '=' ?
           new SyntaxToken(SyntaxKind.NotEqualsToken, Walk(2), "!=") :
           new SyntaxToken(SyntaxKind.ExclamationToken, _position++, "!");
         case '=': return Lookahead == '=' ? 
           new SyntaxToken(SyntaxKind.DoubleEqualsToken, Walk(2), "==") :
-          new SyntaxToken(SyntaxToken.EqualsToken, _position++, "=");
+          new SyntaxToken(SyntaxKind.AssigmentToken, _position++, "=");
         case '<': return Lookahead == '=' ?
           new SyntaxToken(SyntaxKind.LessOrEqualsThenToken, Walk(2), "<=") :
           new SyntaxToken(SyntaxKind.LessThenToken, _position++, "<");
@@ -94,5 +94,4 @@ namespace Compiler.CodeAnalysis.Syntax
       }
     }
   }
-
 }

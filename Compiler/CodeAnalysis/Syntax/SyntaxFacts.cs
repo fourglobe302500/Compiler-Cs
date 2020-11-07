@@ -46,7 +46,7 @@ namespace Compiler.CodeAnalysis.Syntax
       {
         case "true": return SyntaxKind.TrueKeyword;
         case "false": return SyntaxKind.FalseKeyword;
-        default: return SyntaxKind.IndentifierToken;
+        default: return SyntaxKind.IdentifierToken;
       }
     }
   }

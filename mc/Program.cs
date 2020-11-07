@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System;
 
 using Compiler.CodeAnalysis;
@@ -11,6 +12,7 @@ namespace Compiler
     private static void Main()
     {
       bool showTree = false;
+      var variables = new Dictionary<VariableSymbol, object>();
       while (true)
       {
         Console.Write("> ");
@@ -22,8 +24,9 @@ namespace Compiler
         {
           case "#toogleTree":
             showTree = !showTree;
-            Console.WriteLine(showTree ? 
-            "Showing the parsed trees" : "Not showing the parsed trees");
+            Console.WriteLine(showTree ?
+              "Showing the parsed trees" : 
+              "Not showing the parsed trees");
             continue;
           case "#cls":
             Console.Clear();
@@ -32,12 +35,13 @@ namespace Compiler
 
         var syntaxTree = SyntaxTree.Parse(line);
         var compilation = new Compilation(syntaxTree);
-        var result = compilation.Evaluate();
+        var result = compilation.Evaluate(variables);
         var diagnostics = result.Diagnostics;
         if (showTree)
         {
           Console.ForegroundColor = ConsoleColor.DarkGray;
           PrettyPrint(syntaxTree.Root);
+          Console.ResetColor();
         }
         if (!diagnostics.Any())
           Console.WriteLine(result.Value);
@@ -59,8 +63,8 @@ namespace Compiler
         }
       }
     }
-    
-    static void PrettyPrint(SyntaxNode node, string indent = "",bool last = true )
+
+    static void PrettyPrint(SyntaxNode node, string indent = "", bool last = true)
     {
       Console.Write(value: $"{indent}{(last ? "└──" : "├──")}{node.Kind}");
       if (node is SyntaxToken t && t.Value != null)
