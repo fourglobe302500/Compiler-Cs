@@ -35,5 +35,8 @@ namespace Compiler.CodeAnalysis
       TextSpan span, string text, Type leftType, Type rightType)
       => Report(span, 
         $"Binary operator '{text}' is not defined for types {leftType} and {rightType}");
+
+    public void ReportUndefinedName(TextSpan span, string name) 
+      => Report(span, $"Variable {name} doesn't exist");
   }
 }

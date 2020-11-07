@@ -6,37 +6,80 @@ namespace Compiler.CodeAnalysis.Binding
 {
   internal sealed class Binder
   {
+    private readonly Dictionary<string, object> _variables;
     private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
-    public DiagnosticBag Diagnostics => _diagnostics;
 
-    public BoundExpression BindExpression(ExpressionSyntax syntax) 
+    public Binder(Dictionary<string, object> variables)
     {
-      if (syntax.Kind == SyntaxKind.LiteralExpression) 
-        return  BindLiteralExpression((LiteralExpressionSyntax)syntax);
-      else if (syntax.Kind == SyntaxKind.UnaryExpression) 
-        return  BindUnaryExpression((UnaryExpressionSyntax)syntax);
-      else if (syntax.Kind == SyntaxKind.BinaryExpression) 
-        return  BindBinaryExpression((BinaryExpressionSyntax)syntax);
-      else if (syntax.Kind == SyntaxKind.ParenthesizedExpression) 
-        return  BindExpression(((ParenthesizedExpressionSyntax)syntax).Expression);
-      else 
-        throw new Exception($"Unaexpected syntax {syntax.Kind}");
+      _variables = variables;
     }
 
-    private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax) 
+    public DiagnosticBag Diagnostics => _diagnostics;
+
+    public BoundExpression BindExpression(ExpressionSyntax syntax)
+    {
+      switch (syntax.Kind)
+      {
+        case SyntaxKind.LiteralExpression:
+          return BindLiteralExpression((LiteralExpressionSyntax)syntax);
+        case SyntaxKind.ParenthesizedExpression:
+          return BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax);
+        case SyntaxKind.NameExpression:
+          return BindNameExpression((NameExpressionSyntax)syntax);
+        case SyntaxKind.AssigmentExpression:
+          return BindAssigmentxpression((AssigmentExpressionSyntax)syntax);
+        case SyntaxKind.UnaryExpression:
+          return BindUnaryExpression((UnaryExpressionSyntax)syntax);
+        case SyntaxKind.BinaryExpression:
+          return BindBinaryExpression((BinaryExpressionSyntax)syntax);
+        default:
+          throw new Exception($"Unaexpected syntax {syntax.Kind}");
+      }
+    }
+
+    private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
       => new BoundLiteralExpression(syntax.Value ?? 0);
+
+    private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
+    {
+      var name = syntax.IdentifierToken.Text;
+      if (!_variables.TryGetValue(name, out var value))
+      {
+        _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+        return new BoundLiteralExpression(0);
+      }
+      var type = value.GetType();
+      return new BoundVariableExpression(name, type);
+    }
+
+    private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
+    {
+      var name = syntax.IdentifierToken.Text;
+      var boundExpression = BindExpression(syntax.Expression);
+
+      var defaultValue =
+        boundExpression.Type == typeof(int) ? (object)0
+        : boundExpression.Type == typeof(bool) ? (object)false
+        : null;
+      if (defaultValue == null)
+        throw new Exception($"Unexpected variable type: {boundExpression.Type}.");
+
+      _variables[name] = defaultValue;
+
+      return new BoundAssigmentExpression(name, boundExpression);
+    }
 
     private BoundExpression BindUnaryExpression(
       UnaryExpressionSyntax syntax)
     {
       var boundOperand = BindExpression(syntax.Operand);
       var boundOperator = BoundUnaryOperator.Bind(
-        syntax.OperatorToken.Kind, 
-        boundOperand.Type); 
+        syntax.OperatorToken.Kind,
+        boundOperand.Type);
       if (boundOperator == null)
       {
         _diagnostics.ReportUndefinedUnaryOperator(
-          syntax.OperatorToken.Span, 
+          syntax.OperatorToken.Span,
           syntax.OperatorToken.Text,
           boundOperand.Type);
         return boundOperand;
@@ -51,12 +94,12 @@ namespace Compiler.CodeAnalysis.Binding
       var boundRight = BindExpression(syntax.Right);
       var boundOperator = BoundBinaryOperator.Bind(
         syntax.OperatorToken.Kind,
-        boundLeft.Type, 
+        boundLeft.Type,
         boundRight.Type);
       if (boundOperator == null)
       {
         _diagnostics.ReportUndefinedBinaryOperator(
-          syntax.OperatorToken.Span, 
+          syntax.OperatorToken.Span,
           syntax.OperatorToken.Text,
           boundLeft.Type,
           boundRight.Type);
@@ -64,5 +107,8 @@ namespace Compiler.CodeAnalysis.Binding
       }
       return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
     }
+
+    private BoundExpression BindParenthesizedExpression(ParenthesizedExpressionSyntax syntax)
+      => BindExpression(syntax.Expression);
   }
 }

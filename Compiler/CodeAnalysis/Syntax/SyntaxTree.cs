@@ -20,7 +20,7 @@ namespace Compiler.CodeAnalysis.Syntax
     public SyntaxToken EndOfFileToken { get; }
 
     public static SyntaxTree Parse(string text) => 
-    new Parser(text).Parse;
+      new Parser(text).Parse;
   }
 
 }

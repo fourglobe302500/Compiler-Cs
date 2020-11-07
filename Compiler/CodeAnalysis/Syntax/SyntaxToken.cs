@@ -17,7 +17,7 @@ namespace Compiler.CodeAnalysis.Syntax
       Value = value;
     }
 
-    public static SyntaxKind EqualsToken { get; internal set; }
+    public static SyntaxKind AssigmentToken { get; internal set; }
     public override SyntaxKind Kind { get; }
     public int Position { get; }
     public string Text { get; }

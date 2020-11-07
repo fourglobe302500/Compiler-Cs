@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Compiler.CodeAnalysis.Syntax
@@ -33,6 +34,7 @@ namespace Compiler.CodeAnalysis.Syntax
       >= _tokens.Length ? _tokens[_tokens.Length - 1] :
       _tokens[_position + offset];
     private SyntaxToken Current => Peek(0);
+    private SyntaxToken LookAhead => Peek(1);
 
     public SyntaxToken NextToken()
     {
@@ -54,7 +56,17 @@ namespace Compiler.CodeAnalysis.Syntax
       ParseExpression(),
       MatchToken(SyntaxKind.EndOfFileToken));
 
-    private ExpressionSyntax ParseExpression(int parentPrecedence = 0)
+    private ExpressionSyntax ParseExpression()
+      => ParseAssigmentExpression();
+
+    private ExpressionSyntax ParseAssigmentExpression() 
+      =>  Current.Kind == SyntaxKind.IdentifierToken &&
+          LookAhead.Kind == SyntaxKind.AssigmentToken ?
+            new AssigmentExpressionSyntax(
+              NextToken(), NextToken(), ParseAssigmentExpression()) :
+            ParseBinaryExpression();
+
+    private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
     {
       ExpressionSyntax left;
       var unaryOperatorPrecedence = 
@@ -65,7 +77,7 @@ namespace Compiler.CodeAnalysis.Syntax
       else
         left = new UnaryExpressionSyntax(
           NextToken(),
-          ParseExpression(unaryOperatorPrecedence));
+          ParseBinaryExpression(unaryOperatorPrecedence));
       while (true)
       {
         var precedence = SyntaxFacts.GetBinaryOperatorPrecedence(Current.Kind);
@@ -74,7 +86,7 @@ namespace Compiler.CodeAnalysis.Syntax
         left = new BinaryExpressionSyntax(
           left,
           NextToken(),
-          ParseExpression(precedence));
+          ParseBinaryExpression(precedence));
       }
       return left;
     }
@@ -89,9 +101,11 @@ namespace Compiler.CodeAnalysis.Syntax
             ParseExpression(),
             MatchToken(SyntaxKind.CloseParenthesisToken));
         case SyntaxKind.TrueKeyword:  
-          return new LiteralExpressionSyntax(NextToken(), true);
         case SyntaxKind.FalseKeyword: 
-          return new LiteralExpressionSyntax(NextToken(), false);
+          return new LiteralExpressionSyntax(
+            Current, NextToken().Kind == SyntaxKind.TrueKeyword);
+        case SyntaxKind.IdentifierToken:
+          return new NameExpressionSyntax(NextToken());
         default: 
           return new LiteralExpressionSyntax(MatchToken(SyntaxKind.NumberToken));
       }
