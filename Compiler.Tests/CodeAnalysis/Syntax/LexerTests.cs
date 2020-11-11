@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Compiler.Tests.CodeAnalysis.Syntax
 {
-    public class LexerTest
+    public class LexerTests
     {
         [Theory]
         [MemberData(nameof(GetTokenData))]
