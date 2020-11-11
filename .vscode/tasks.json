@@ -14,6 +14,28 @@
             "problemMatcher": "$msCompile"
         },
         {
+            "label": "Call",
+            "command": "",
+            "type": "shell",
+            "problemMatcher":"$msCompile",
+            "dependsOn": ["build", "test"],
+            "dependsOrder": "sequence",
+            "detail": "Call all tasks in order"
+        },
+        {
+            "label": "test",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/Compiler.Tests/Compiler.Tests.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "detail": "Runs a test in the project",
+            "problemMatcher": "$msCompile"
+        },
+        {
             "label": "publish",
             "command": "dotnet",
             "type": "process",
