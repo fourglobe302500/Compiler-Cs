@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace Compiler.CodeAnalysis.Syntax
 {
     public static class SyntaxFacts
@@ -55,6 +58,20 @@ namespace Compiler.CodeAnalysis.Syntax
                 default: 
                     return SyntaxKind.IdentifierToken;
             }
+        }
+
+        public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds()
+        {
+            foreach (var kind in (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind)))
+                if (GetUnaryOperatorPrecedence(kind) > 0)
+                    yield return kind;
+        }
+
+        public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds()
+        {
+            foreach (var kind in (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind)))
+                if (GetBinaryOperatorPrecedence(kind) > 0)
+                    yield return kind;
         }
 
         public static string GetText(SyntaxKind kind)
