@@ -70,7 +70,7 @@ namespace Compiler.CodeAnalysis.Syntax
     {
       ExpressionSyntax left;
       var unaryOperatorPrecedence = 
-        SyntaxFacts.GetUnaryOperatorPrecedence(Current.Kind);
+        Current.Kind.GetUnaryOperatorPrecedence();
       if (unaryOperatorPrecedence == 0 ||
           unaryOperatorPrecedence < parentPrecedence)
         left = ParsePrimaryExpression();
@@ -80,7 +80,7 @@ namespace Compiler.CodeAnalysis.Syntax
           ParseBinaryExpression(unaryOperatorPrecedence));
       while (true)
       {
-        var precedence = SyntaxFacts.GetBinaryOperatorPrecedence(Current.Kind);
+        var precedence = Current.Kind.GetBinaryOperatorPrecedence();
         if (precedence == 0 || precedence <= parentPrecedence)
           break;
         left = new BinaryExpressionSyntax(

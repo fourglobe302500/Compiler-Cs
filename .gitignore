@@ -3,7 +3,7 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
-prompt.txt
+prompt.ps1
 
 # User-specific files
 *.rsuser
