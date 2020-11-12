@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
-  internal sealed class Parser
+    internal sealed class Parser
   {
     private readonly SyntaxToken[] _tokens;
     private int _position;
