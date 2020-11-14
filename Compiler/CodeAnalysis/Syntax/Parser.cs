@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
@@ -53,7 +54,7 @@ namespace Compiler.CodeAnalysis.Syntax
         }
 
         public SyntaxTree Parse => new SyntaxTree(
-            Diagnostics,
+            Diagnostics.ToImmutableArray(),
             ParseExpression(),
             MatchToken(SyntaxKind.EndOfFileToken));
 
