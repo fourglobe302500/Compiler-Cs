@@ -23,7 +23,7 @@
             "detail": "Call all tasks in order"
         },
         {
-            "label": "test",
+            "label": "Test",
             "command": "dotnet",
             "type": "process",
             "args": [
