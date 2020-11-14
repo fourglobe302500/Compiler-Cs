@@ -1,97 +1,129 @@
 namespace Compiler.CodeAnalysis.Syntax
 {
-  internal sealed class Lexer
-  {
-    private readonly string _text;
-    private int _position;
-    private DiagnosticBag _diagnostics = new DiagnosticBag();
-
-    public Lexer(string text) => _text = text;
-    public DiagnosticBag Diagnostics => _diagnostics;
-    private char Current => Peek(0);
-    private char Lookahead => Peek(1);
-    private char Peek(int offset) => 
-      _position + offset >= _text.Length ? '\0' : _text[_position + offset];
-    private char Next() => _text[_position++];
-    private int Walk(int Dist) => (_position += Dist) - Dist;
-
-    public SyntaxToken Lex()
+    internal sealed class Lexer
     {
-      if (_position >= _text.Length)
-        return new SyntaxToken(SyntaxKind.EndOfFileToken, _text.Length, "\0", null);
-      else if (char.IsDigit(Current))
-      {
-        var start = _position;
+        private readonly string _text;
+        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        
+        private int _position;
 
-        while (char.IsDigit(Current))
-          Next();
+        private int _start;
+        private SyntaxKind _kind;
+        private object _value;
 
-        var length = _position - start;
-        var text = _text.Substring(start, length);
-        if (!int.TryParse(text, out var value))
-          _diagnostics.ReportInvalidNumber(
-            new TextSpan(start, length), _text, typeof(int));
-        return new SyntaxToken(SyntaxKind.NumberToken, start, text, value);
-      }
-      else if (char.IsWhiteSpace(Current))
-      {
-        var start = _position;
-        while (char.IsWhiteSpace(Current))
-          Next();
-        var length = _position - start;
-        var text = _text.Substring(start, length);
-        return new SyntaxToken(SyntaxKind.WhiteSpaceToken, start, text, null);
-      }
-      else if (char.IsLetter(Current))
-      {
-        var start = _position;
-        while (char.IsLetter(Current))
-          Next();
-        var length = _position - start;
-        var text = _text.Substring(start, length);
-        var kind = SyntaxFacts.GetKeywordKind(text);
-        return new SyntaxToken(kind, start, text);
-      }
-      switch (Current)
-      {
-        case '+': return new SyntaxToken(
-          SyntaxKind.PlusToken, _position++, "+");
-        case '-': return new SyntaxToken(
-          SyntaxKind.MinusToken, _position++, "-");
-        case '*': return new SyntaxToken(
-          SyntaxKind.StarToken, _position++, "*");
-        case '/': return new SyntaxToken(
-          SyntaxKind.SlashToken, _position++, "/");
-        case '(': return new SyntaxToken(
-          SyntaxKind.OpenParenthesisToken, _position++, "(");
-        case ')': return new SyntaxToken(
-          SyntaxKind.CloseParenthesisToken, _position++, ")");
-        case '%': return new SyntaxToken(
-          SyntaxKind.PercentToken, _position++, "%");
-        case '^': return new SyntaxToken(
-          SyntaxKind.HatToken, _position++, "^");
-        case '|': return Lookahead == '|' ? 
-          new SyntaxToken(SyntaxKind.LogicalOrToken, Walk(2), "||") : 
-          new SyntaxToken(SyntaxKind.InvalidToken, _position++, "|");
-        case '&': return Lookahead == '&' ? 
-          new SyntaxToken(SyntaxKind.LogicalAndToken, Walk(2), "&&") : 
-          new SyntaxToken(SyntaxKind.InvalidToken, _position++, "&");
-        case '!': return Lookahead == '=' ?
-          new SyntaxToken(SyntaxKind.NotEqualsToken, Walk(2), "!=") :
-          new SyntaxToken(SyntaxKind.ExclamationToken, _position++, "!");
-        case '=': return Lookahead == '=' ? 
-          new SyntaxToken(SyntaxKind.DoubleEqualsToken, Walk(2), "==") :
-          new SyntaxToken(SyntaxKind.AssigmentToken, _position++, "=");
-        case '<': return Lookahead == '=' ?
-          new SyntaxToken(SyntaxKind.LessOrEqualsThenToken, Walk(2), "<=") :
-          new SyntaxToken(SyntaxKind.LessThenToken, _position++, "<");
-        case '>': return Lookahead == '=' ?
-          new SyntaxToken(SyntaxKind.GreaterOrEqualsThenToken, Walk(2), ">=") :
-          new SyntaxToken(SyntaxKind.GreaterThenToken, _position++, ">");
-        default: 
-          _diagnostics.ReportInvalidCharacter(_position, Current);
-          return new SyntaxToken(SyntaxKind.InvalidToken, _position++, "\0"); 
-      }
+        public Lexer(string text) => _text = text;
+        public DiagnosticBag Diagnostics => _diagnostics;
+        private char Current => Peek(0);
+        private char Lookahead => Peek(1);
+        private char Peek(int offset) => 
+            _position + offset >= _text.Length ? '\0' : _text[_position + offset];
+        private char Next() => _text[_position++];
+        private char Last => _text[Peek(-1)];
+        private int Walk(int Dist) => (_position += Dist) - Dist;
+
+        public SyntaxToken Lex()
+        {
+            _start = _position;
+            _kind = SyntaxKind.InvalidToken;
+            _value = null;
+            switch (Current)
+            {
+                case '\0': _kind = SyntaxKind.EndOfFileToken; _position--; break;
+                case '+': _kind = SyntaxKind.PlusToken; break;
+                case '-': _kind = SyntaxKind.MinusToken; break;
+                case '*': _kind = SyntaxKind.StarToken; break;
+                case '/': _kind = SyntaxKind.SlashToken; break;
+                case '(': _kind = SyntaxKind.OpenParenthesisToken; break;
+                case ')': _kind = SyntaxKind.CloseParenthesisToken; break;
+                case '%': _kind = SyntaxKind.PercentToken; break;
+                case '^': _kind = SyntaxKind.HatToken; break;
+                case '|': 
+                    if (Lookahead == '|')
+                        {_kind = SyntaxKind.LogicalOrToken; Walk(1);}
+                    else
+                        _kind = SyntaxKind.InvalidToken;
+                    break;
+                case '&': 
+                    if (Lookahead == '&')
+                        {_kind = SyntaxKind.LogicalAndToken; Walk(1);}
+                    else
+                        _kind = SyntaxKind.InvalidToken;
+                    break;
+                case '!': 
+                    if (Lookahead == '=')
+                        {_kind = SyntaxKind.NotEqualsToken; Walk(1);}
+                    else
+                        _kind = SyntaxKind.ExclamationToken;
+                    break;
+                case '=': 
+                    if (Lookahead == '=')
+                        {_kind = SyntaxKind.DoubleEqualsToken; Walk(1);}
+                    else
+                        _kind = SyntaxKind.AssigmentToken;
+                    break;
+                case '<': 
+                    if (Lookahead == '=')
+                        {_kind = SyntaxKind.LessOrEqualsThenToken; Walk(1);}
+                    else
+                        _kind = SyntaxKind.LessThenToken;
+                    break;
+                case '>': 
+                    if (Lookahead == '=')
+                        {_kind = SyntaxKind.GreaterOrEqualsThenToken; Walk(1);}
+                    else
+                        _kind = SyntaxKind.GreaterThenToken;
+                    break;
+                case '0': case '1': case '2': case '3': case '4': 
+                case '5': case '6': case '7': case '8': case '9':
+                    ReadNumberToken();
+                    _position--;
+                    break;
+                case ' ': case '\t': case '\n': case '\r':
+                    ReadWhiteSpace();
+                    _position--;
+                    break;
+                default:
+                    if (char.IsLetter(Current))
+                        ReadKeyword();
+                    else if (char.IsWhiteSpace(Current))
+                        ReadWhiteSpace();
+                    else
+                        _diagnostics.ReportInvalidCharacter(_position++, Current);
+                    _position--; 
+                    break;
+            }
+            _position++;
+            var text = SyntaxFacts.GetText(_kind);
+            if (text == null)
+                text = _text.Substring(_start, _position - _start);
+            return new SyntaxToken(_kind, _start, text, _value);
+        }
+
+        private void ReadNumberToken()
+        {
+            while (char.IsDigit(Current))
+                _position++;
+            var length = _position - _start;
+            var text = _text.Substring(_start, length);
+            if (!int.TryParse(text, out var value))
+                _diagnostics.ReportInvalidNumber(
+                    new TextSpan(_start, length), _text, typeof(int));
+            _value = value;
+            _kind = SyntaxKind.NumberToken;
+        }
+        private void ReadWhiteSpace()
+        {
+            while (char.IsWhiteSpace(Current))
+                _position++;
+            _kind = SyntaxKind.WhiteSpaceToken;
+        }
+        private void ReadKeyword()
+        {
+            while (char.IsLetter(Current))
+                _position++;
+            var length = _position - _start;
+            var text = _text.Substring(_start, length);
+            _kind = SyntaxFacts.GetKeywordKind(text);
+        }
     }
-  }
 }
