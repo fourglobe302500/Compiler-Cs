@@ -19,9 +19,9 @@ namespace Compiler.CodeAnalysis.Syntax
 
     public static SyntaxKind AssigmentToken { get; internal set; }
     public override SyntaxKind Kind { get; }
+    public override TextSpan Span => new TextSpan(Position, Text.Length);
     public int Position { get; }
     public string Text { get; }
     public object Value { get; }
-    public TextSpan Span => new TextSpan(Position, Text.Length);
   }
 }
