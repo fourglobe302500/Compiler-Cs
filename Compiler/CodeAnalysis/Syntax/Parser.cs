@@ -56,11 +56,12 @@ namespace Compiler.CodeAnalysis.Syntax
             return new SyntaxToken(kind, Current.Position, null, null);
         }
 
-        public SyntaxTree Parse => new SyntaxTree(
-            _text,
-            Diagnostics.ToImmutableArray(),
-            ParseExpression(),
-            MatchToken(SyntaxKind.EndOfFileToken));
+        public SyntaxTree Parse()
+        {
+            ExpressionSyntax root = ParseExpression();
+            SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
+            return new SyntaxTree(_text, Diagnostics.ToImmutableArray(), root, endOfFileToken);
+        }
 
         private ExpressionSyntax ParseExpression() => ParseAssigmentExpression();
 

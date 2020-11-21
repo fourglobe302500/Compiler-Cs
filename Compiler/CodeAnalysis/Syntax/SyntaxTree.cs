@@ -27,7 +27,7 @@ namespace Compiler.CodeAnalysis.Syntax
             Parse(SourceText.From(text));
 
         public static SyntaxTree Parse(SourceText text) => 
-            new Parser(text).Parse;
+            new Parser(text).Parse();
 
         public static IEnumerable<SyntaxToken> ParseTokens(string text) =>
             ParseTokens(SourceText.From(text));
