@@ -47,11 +47,17 @@ namespace Compiler
                     Console.WriteLine(result.Value);
                 else
                 {
+                    var text = syntaxTree.Text;
+
                     foreach (var err in diagnostics)
                     {
+                        var lineIndex = text.GetLineIndex(err.Span.Start);
+                        var lineNumber = lineIndex + 1; 
+                        var character = err.Span.Start - text.Lines[lineIndex].Start + 1;
+
                         Console.WriteLine();
                         Console.ForegroundColor = ConsoleColor.DarkRed;
-                        Console.WriteLine(err);
+                        Console.WriteLine($"({lineNumber},{character}): {err} ");
                         Console.ResetColor();
                         Console.Write($"    {line.Substring(0, err.Span.Start)}");
                         Console.ForegroundColor = ConsoleColor.DarkRed;

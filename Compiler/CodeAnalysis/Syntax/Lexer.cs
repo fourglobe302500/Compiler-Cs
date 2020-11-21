@@ -4,7 +4,7 @@ namespace Compiler.CodeAnalysis.Syntax
 {
     internal sealed class Lexer
     {
-        private readonly string _text;
+        private readonly SourceText _text;
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         
         private int _position;
@@ -13,7 +13,7 @@ namespace Compiler.CodeAnalysis.Syntax
         private SyntaxKind _kind;
         private object _value;
 
-        public Lexer(string text) => _text = text;
+        public Lexer(SourceText text) => _text = text;
         public DiagnosticBag Diagnostics => _diagnostics;
         private char Current => Peek(0);
         private char Lookahead => Peek(1);
@@ -97,7 +97,7 @@ namespace Compiler.CodeAnalysis.Syntax
             _position++;
             var text = SyntaxFacts.GetText(_kind);
             if (text == null)
-                text = _text.Substring(_start, _position - _start);
+                text = _text.ToString(_start, _position - _start);
             return new SyntaxToken(_kind, _start, text, _value);
         }
 
@@ -106,10 +106,10 @@ namespace Compiler.CodeAnalysis.Syntax
             while (char.IsDigit(Current))
                 _position++;
             var length = _position - _start;
-            var text = _text.Substring(_start, length);
+            var text = _text.ToString(_start, length);
             if (!int.TryParse(text, out var value))
                 _diagnostics.ReportInvalidNumber(
-                    new TextSpan(_start, length), _text, typeof(int));
+                    new TextSpan(_start, length), text, typeof(int));
             _value = value;
             _kind = SyntaxKind.NumberToken;
         }
@@ -124,7 +124,7 @@ namespace Compiler.CodeAnalysis.Syntax
             while (char.IsLetter(Current))
                 _position++;
             var length = _position - _start;
-            var text = _text.Substring(_start, length);
+            var text = _text.ToString(_start, length);
             _kind = SyntaxFacts.GetKeywordKind(text);
         }
     }

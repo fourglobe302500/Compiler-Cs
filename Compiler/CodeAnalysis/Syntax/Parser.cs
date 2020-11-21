@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Compiler.CodeAnalysis.Text;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
@@ -7,10 +8,11 @@ namespace Compiler.CodeAnalysis.Syntax
     {
         private readonly SyntaxToken[] _tokens;
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        private readonly SourceText _text;
 
         private int _position;
 
-        public Parser(string text)
+        public Parser(SourceText text)
         {
             var tokens = new List<SyntaxToken>();
             var lexer = new Lexer(text);
@@ -28,6 +30,7 @@ namespace Compiler.CodeAnalysis.Syntax
             } while (token.Kind != SyntaxKind.EndOfFileToken);
             _tokens = tokens.ToArray();
             _diagnostics.AddRange(lexer.Diagnostics);
+            _text = text;
         }
 
         public DiagnosticBag Diagnostics => _diagnostics;
@@ -54,6 +57,7 @@ namespace Compiler.CodeAnalysis.Syntax
         }
 
         public SyntaxTree Parse => new SyntaxTree(
+            _text,
             Diagnostics.ToImmutableArray(),
             ParseExpression(),
             MatchToken(SyntaxKind.EndOfFileToken));

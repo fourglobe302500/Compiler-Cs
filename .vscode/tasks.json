@@ -33,6 +33,7 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "detail": "Runs a test in the project",
+            "dependsOn": ["build"],
             "problemMatcher": "$msCompile"
         },
         {
