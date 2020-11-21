@@ -21,6 +21,7 @@ namespace Compiler.CodeAnalysis.Syntax
 
         public static SyntaxTree Parse(string text) => 
             new Parser(text).Parse;
+
         public static IEnumerable<SyntaxToken> ParseTokens(string text)
         {
             var lexer = new Lexer(text);
