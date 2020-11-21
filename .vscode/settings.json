@@ -1,3 +1,5 @@
 {
-  "terminal.explorerKind": "external"
+  "terminal.explorerKind": "external",
+  "files.autoSave": "afterDelay",
+  "csharp.referencesCodeLens.enabled": false
 }

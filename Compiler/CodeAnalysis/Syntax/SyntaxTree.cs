@@ -1,27 +1,38 @@
+using System.Collections.Immutable;
 using System.Collections.Generic;
-using System.Linq;
+using Compiler.CodeAnalysis.Text;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
     public sealed class SyntaxTree
     {
         public SyntaxTree(
-            IEnumerable<Diagnostic> diagnostics,
+            SourceText text,
+            ImmutableArray<Diagnostic> diagnostics,
             ExpressionSyntax root,
             SyntaxToken endOfFileToken)
         {
-            Diagnostics = diagnostics.ToArray();
+            Text = text;
+            Diagnostics = diagnostics;
             Root = root;
             EndOfFileToken = endOfFileToken;
         }
 
-        public IReadOnlyList<Diagnostic> Diagnostics { get; }
+        public SourceText Text { get; }
+        public ImmutableArray<Diagnostic> Diagnostics { get; }
         public ExpressionSyntax Root { get; }
         public SyntaxToken EndOfFileToken { get; }
 
         public static SyntaxTree Parse(string text) => 
-            new Parser(text).Parse;
-        public static IEnumerable<SyntaxToken> ParseTokens(string text)
+            Parse(SourceText.From(text));
+
+        public static SyntaxTree Parse(SourceText text) => 
+            new Parser(text).Parse();
+
+        public static IEnumerable<SyntaxToken> ParseTokens(string text) =>
+            ParseTokens(SourceText.From(text));
+
+        public static IEnumerable<SyntaxToken> ParseTokens(SourceText text)
         {
             var lexer = new Lexer(text);
             while (true)

@@ -1,9 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
+using Compiler.CodeAnalysis.Text;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
-  public sealed class SyntaxToken : SyntaxNode
+    public sealed class SyntaxToken : SyntaxNode
   {
     public SyntaxToken(
       SyntaxKind kind,
@@ -19,13 +18,9 @@ namespace Compiler.CodeAnalysis.Syntax
 
     public static SyntaxKind AssigmentToken { get; internal set; }
     public override SyntaxKind Kind { get; }
+    public override TextSpan Span => new TextSpan(Position, Text?.Length ?? 0);
     public int Position { get; }
     public string Text { get; }
     public object Value { get; }
-    public TextSpan Span => new TextSpan(Position, Text.Length);
-
-    public override IEnumerable<SyntaxNode> GetChildren() =>
-    Enumerable.Empty<SyntaxNode>();
   }
-
 }
