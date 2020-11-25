@@ -1,47 +1,52 @@
 namespace Compiler.CodeAnalysis.Syntax
 {
-  public enum SyntaxKind
-  {
-    //TODO: 
-    //Tokens
-    EndOfFileToken,
-    InvalidToken,
-    IdentifierToken,
-    WhiteSpaceToken,
-    NumberToken,
-    CloseParenthesisToken,
-    OpenParenthesisToken,
-    ExclamationToken,
-    AssigmentToken,
+    public enum SyntaxKind
+    {
+        //TODO:
+        //Tokens
+        EndOfFileToken,
 
-    //Operators
-    PlusToken,
-    MinusToken,
-    StarToken,
-    SlashToken,
-    PercentToken,
-    HatToken,
+        InvalidToken,
+        IdentifierToken,
+        WhiteSpaceToken,
+        NumberToken,
+        CloseParenthesisToken,
+        OpenParenthesisToken,
+        ExclamationToken,
+        AssigmentToken,
 
-    //Expressions
-    LiteralExpression,
-    NameExpression,
-    AssigmentExpression,
-    UnaryExpression,
-    BinaryExpression,
-    ParenthesizedExpression,
+        //Operators
+        PlusToken,
 
-    //Keywords
-    TrueKeyword,
-    FalseKeyword,
+        MinusToken,
+        StarToken,
+        SlashToken,
+        PercentToken,
+        HatToken,
 
-    //Logical Operators
-    LogicalOrToken,
-    LogicalAndToken,
-    NotEqualsToken,
-    DoubleEqualsToken,
-    LessOrEqualsThenToken,
-    LessThenToken,
-    GreaterOrEqualsThenToken,
-    GreaterThenToken,
-  }
+        //Expressions
+        LiteralExpression,
+
+        NameExpression,
+        AssigmentExpression,
+        UnaryExpression,
+        BinaryExpression,
+        ParenthesizedExpression,
+
+        //Keywords
+        TrueKeyword,
+
+        FalseKeyword,
+
+        //Logical Operators
+        LogicalOrToken,
+
+        LogicalAndToken,
+        NotEqualsToken,
+        DoubleEqualsToken,
+        LessOrEqualsThenToken,
+        LessThenToken,
+        GreaterOrEqualsThenToken,
+        GreaterThenToken,
+    }
 }

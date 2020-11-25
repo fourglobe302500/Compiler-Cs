@@ -17,6 +17,7 @@ namespace Compiler.CodeAnalysis.Text
         public int LengthIncludingLineBreak { get; }
         public TextSpan Span => new TextSpan(Start, Length);
         public TextSpan SpanIncludingLineBreak => new TextSpan(Start, LengthIncludingLineBreak);
+
         public override string ToString() => Text.ToString(Span);
     }
 }

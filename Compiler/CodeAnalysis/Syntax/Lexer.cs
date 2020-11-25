@@ -6,7 +6,7 @@ namespace Compiler.CodeAnalysis.Syntax
     {
         private readonly SourceText _text;
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
-        
+
         private int _position;
 
         private int _start;
@@ -14,13 +14,18 @@ namespace Compiler.CodeAnalysis.Syntax
         private object _value;
 
         public Lexer(SourceText text) => _text = text;
+
         public DiagnosticBag Diagnostics => _diagnostics;
         private char Current => Peek(0);
         private char Lookahead => Peek(1);
-        private char Peek(int offset) => 
+
+        private char Peek(int offset) =>
             _position + offset >= _text.Length ? '\0' : _text[_position + offset];
+
         private char Next() => _text[_position++];
+
         private char Last => _text[Peek(-1)];
+
         private int Walk(int Dist) => (_position += Dist) - Dist;
 
         public SyntaxToken Lex()
@@ -39,51 +44,70 @@ namespace Compiler.CodeAnalysis.Syntax
                 case ')': _kind = SyntaxKind.CloseParenthesisToken; break;
                 case '%': _kind = SyntaxKind.PercentToken; break;
                 case '^': _kind = SyntaxKind.HatToken; break;
-                case '|': 
+                case '|':
                     if (Lookahead == '|')
-                        {_kind = SyntaxKind.LogicalOrToken; Walk(1);}
+                    { _kind = SyntaxKind.LogicalOrToken; Walk(1); }
                     else
                         _kind = SyntaxKind.InvalidToken;
                     break;
-                case '&': 
+
+                case '&':
                     if (Lookahead == '&')
-                        {_kind = SyntaxKind.LogicalAndToken; Walk(1);}
+                    { _kind = SyntaxKind.LogicalAndToken; Walk(1); }
                     else
                         _kind = SyntaxKind.InvalidToken;
                     break;
-                case '!': 
+
+                case '!':
                     if (Lookahead == '=')
-                        {_kind = SyntaxKind.NotEqualsToken; Walk(1);}
+                    { _kind = SyntaxKind.NotEqualsToken; Walk(1); }
                     else
                         _kind = SyntaxKind.ExclamationToken;
                     break;
-                case '=': 
+
+                case '=':
                     if (Lookahead == '=')
-                        {_kind = SyntaxKind.DoubleEqualsToken; Walk(1);}
+                    { _kind = SyntaxKind.DoubleEqualsToken; Walk(1); }
                     else
                         _kind = SyntaxKind.AssigmentToken;
                     break;
-                case '<': 
+
+                case '<':
                     if (Lookahead == '=')
-                        {_kind = SyntaxKind.LessOrEqualsThenToken; Walk(1);}
+                    { _kind = SyntaxKind.LessOrEqualsThenToken; Walk(1); }
                     else
                         _kind = SyntaxKind.LessThenToken;
                     break;
-                case '>': 
+
+                case '>':
                     if (Lookahead == '=')
-                        {_kind = SyntaxKind.GreaterOrEqualsThenToken; Walk(1);}
+                    { _kind = SyntaxKind.GreaterOrEqualsThenToken; Walk(1); }
                     else
                         _kind = SyntaxKind.GreaterThenToken;
                     break;
-                case '0': case '1': case '2': case '3': case '4': 
-                case '5': case '6': case '7': case '8': case '9':
+
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
                     ReadNumberToken();
                     _position--;
                     break;
-                case ' ': case '\t': case '\n': case '\r':
+
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\r':
                     ReadWhiteSpace();
                     _position--;
                     break;
+
                 default:
                     if (char.IsLetter(Current))
                         ReadKeyword();
@@ -91,7 +115,7 @@ namespace Compiler.CodeAnalysis.Syntax
                         ReadWhiteSpace();
                     else
                         _diagnostics.ReportInvalidCharacter(_position++, Current);
-                    _position--; 
+                    _position--;
                     break;
             }
             _position++;
@@ -113,12 +137,14 @@ namespace Compiler.CodeAnalysis.Syntax
             _value = value;
             _kind = SyntaxKind.NumberToken;
         }
+
         private void ReadWhiteSpace()
         {
             while (char.IsWhiteSpace(Current))
                 _position++;
             _kind = SyntaxKind.WhiteSpaceToken;
         }
+
         private void ReadKeyword()
         {
             while (char.IsLetter(Current))

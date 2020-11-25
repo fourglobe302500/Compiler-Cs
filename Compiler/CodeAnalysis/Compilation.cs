@@ -1,8 +1,8 @@
-using System.Collections.Generic;
 using Compiler.CodeAnalysis.Binding;
 using Compiler.CodeAnalysis.Syntax;
-using System.Linq;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Compiler.CodeAnalysis
 {

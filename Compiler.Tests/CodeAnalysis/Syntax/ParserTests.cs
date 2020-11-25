@@ -1,6 +1,7 @@
-using System.Collections.Generic;
 using Compiler.CodeAnalysis.Syntax;
+using System.Collections.Generic;
 using Xunit;
+using System.Linq;
 
 namespace Compiler.Tests.CodeAnalysis.Syntax
 {
@@ -10,21 +11,20 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
         [MemberData(nameof(GetBinaryOperatorPairsData))]
         public void Parser_BinaryExpression_HonorsPrecedences(SyntaxKind op1, SyntaxKind op2)
         {
-            var op1Prec = SyntaxFacts.GetBinaryOperatorPrecedence(op1);
-            var op2Prec = SyntaxFacts.GetBinaryOperatorPrecedence(op2);
-            var op1Text = SyntaxFacts.GetText(op1);
-            var op2Text = SyntaxFacts.GetText(op2);
-            var text = $"a {op1Text} b {op2Text} c";
-            var expression = SyntaxTree.Parse(text).Root;
-            
+            int op1Prec = SyntaxFacts.GetBinaryOperatorPrecedence(op1);
+            int op2Prec = SyntaxFacts.GetBinaryOperatorPrecedence(op2);
+            string op1Text = SyntaxFacts.GetText(op1);
+            string op2Text = SyntaxFacts.GetText(op2);
+            string text = $"a {op1Text} b {op2Text} c";
+            ExpressionSyntax expression = SyntaxTree.Parse(text).Root;
+
             if (op1Prec >= op2Prec)
-            {
                 //      op2
                 //     /  \
                 //   op1  c
                 //  /  \
                 // a    b
-                using (var e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new AssertingEnumerator(expression))
                 {
                     //op2
                     e.AssertNode(SyntaxKind.BinaryExpression);
@@ -44,15 +44,13 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                     e.AssertNode(SyntaxKind.NameExpression);
                     e.AssertToken(SyntaxKind.IdentifierToken, "c");
                 }
-            }
             else
-            {
                 //   op1
                 //  /  \
                 // a   op2
                 //    /  \
                 //   b    c
-                using (var e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new AssertingEnumerator(expression))
                 {
                     //op1
                     e.AssertNode(SyntaxKind.BinaryExpression);
@@ -72,30 +70,28 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                     e.AssertNode(SyntaxKind.NameExpression);
                     e.AssertToken(SyntaxKind.IdentifierToken, "c");
                 }
-            }
         }
 
         [Theory]
         [MemberData(nameof(GetUnaryOperatorPairsData))]
         public void Parser_UnaryExpression_HonorsPrecedences(
-            SyntaxKind unaryKind, 
+            SyntaxKind unaryKind,
             SyntaxKind binaryKind)
         {
-            var unaryPrec = SyntaxFacts.GetUnaryOperatorPrecedence(unaryKind);
-            var binaryPrec = SyntaxFacts.GetBinaryOperatorPrecedence(binaryKind);
-            var unaryText = SyntaxFacts.GetText(unaryKind);
-            var binaryText = SyntaxFacts.GetText(binaryKind);
-            var text = $"{unaryText} a {binaryText} b";
-            var expression = SyntaxTree.Parse(text).Root;
-            
+            int unaryPrec = SyntaxFacts.GetUnaryOperatorPrecedence(unaryKind);
+            int binaryPrec = SyntaxFacts.GetBinaryOperatorPrecedence(binaryKind);
+            string unaryText = SyntaxFacts.GetText(unaryKind);
+            string binaryText = SyntaxFacts.GetText(binaryKind);
+            string text = $"{unaryText} a {binaryText} b";
+            ExpressionSyntax expression = SyntaxTree.Parse(text).Root;
+
             if (unaryPrec >= binaryPrec)
-            {
                 //     binary
                 //     /    \
                 // unary    b
                 //  |
                 //  a
-                using (var e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new AssertingEnumerator(expression))
                 {
                     //binary
                     e.AssertNode(SyntaxKind.BinaryExpression);
@@ -112,15 +108,13 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                     e.AssertNode(SyntaxKind.NameExpression);
                     e.AssertToken(SyntaxKind.IdentifierToken, "b");
                 }
-            }
             else
-            {
                 //    unary
                 //     |
                 //  binary
                 //  /    \
                 // a     b
-                using (var e = new AssertingEnumerator(expression))
+                using (AssertingEnumerator e = new AssertingEnumerator(expression))
                 {
                     //unary
                     e.AssertNode(SyntaxKind.UnaryExpression);
@@ -137,21 +131,14 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                     e.AssertNode(SyntaxKind.NameExpression);
                     e.AssertToken(SyntaxKind.IdentifierToken, "b");
                 }
-            }
         }
 
-        public static IEnumerable<object[]> GetBinaryOperatorPairsData()
-        {
-            foreach (var op1 in SyntaxFacts.GetBinaryOperatorKinds())
-                foreach (var op2 in SyntaxFacts.GetBinaryOperatorKinds())
-                    yield return new object[] { op1, op2 };
-        }
+        public static IEnumerable<object[]> GetBinaryOperatorPairsData() => from op1 in SyntaxFacts.GetBinaryOperatorKinds()
+                                                                            from op2 in SyntaxFacts.GetBinaryOperatorKinds()
+                                                                            select new object[] { op1, op2 };
 
-        public static IEnumerable<object[]> GetUnaryOperatorPairsData()
-        {
-            foreach (var unary in SyntaxFacts.GetUnaryOperatorKinds())
-                foreach (var binary in SyntaxFacts.GetBinaryOperatorKinds())
-                    yield return new object[] { unary, binary };
-        }
+        public static IEnumerable<object[]> GetUnaryOperatorPairsData() => from unary in SyntaxFacts.GetUnaryOperatorKinds()
+                                                                           from binary in SyntaxFacts.GetBinaryOperatorKinds()
+                                                                           select new object[] { unary, binary };
     }
 }

@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+
 namespace Compiler.CodeAnalysis.Text
 {
     public sealed class SourceText
@@ -23,7 +24,7 @@ namespace Compiler.CodeAnalysis.Text
             var upper = Lines.Length - 1;
             while (lower <= upper)
             {
-                var index = lower + (upper - lower)/2;
+                var index = lower + (upper - lower) / 2;
                 var start = Lines[index].Start;
                 if (position == start)
                     return index;

@@ -1,6 +1,6 @@
+using Compiler.CodeAnalysis.Text;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Compiler.CodeAnalysis.Text;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
@@ -34,9 +34,11 @@ namespace Compiler.CodeAnalysis.Syntax
         }
 
         public DiagnosticBag Diagnostics => _diagnostics;
+
         private SyntaxToken Peek(int offset) => _position + offset
             >= _tokens.Length ? _tokens[_tokens.Length - 1] :
             _tokens[_position + offset];
+
         private SyntaxToken Current => Peek(0);
         private SyntaxToken LookAhead => Peek(1);
         private SyntaxToken Last => Peek(-1);
@@ -65,7 +67,7 @@ namespace Compiler.CodeAnalysis.Syntax
 
         private ExpressionSyntax ParseExpression() => ParseAssigmentExpression();
 
-        private ExpressionSyntax ParseAssigmentExpression()=> 
+        private ExpressionSyntax ParseAssigmentExpression() =>
             Current.Kind == SyntaxKind.IdentifierToken && LookAhead.Kind == SyntaxKind.AssigmentToken ?
                 new AssigmentExpressionSyntax(NextToken(), NextToken(), ParseAssigmentExpression()) :
                 ParseBinaryExpression();
@@ -95,30 +97,22 @@ namespace Compiler.CodeAnalysis.Syntax
             return left;
         }
 
-        private ExpressionSyntax ParsePrimaryExpression()
+        private ExpressionSyntax ParsePrimaryExpression() => Current.Kind switch
         {
-            switch (Current.Kind)
-            {
-                case SyntaxKind.OpenParenthesisToken:
-                    return ParseParenthesizedExpression();
-                case SyntaxKind.TrueKeyword:
-                case SyntaxKind.FalseKeyword:
-                    return ParseBooleanLiteral();
-                case SyntaxKind.NumberToken:
-                    return ParseNumberLiteral();
-                case SyntaxKind.IdentifierToken:
-                default:
-                    return ParseNameExpression();
-            }
-        }
+            SyntaxKind.OpenParenthesisToken => ParseParenthesizedExpression(),
+            SyntaxKind.TrueKeyword => ParseBooleanLiteral(),
+            SyntaxKind.FalseKeyword => ParseBooleanLiteral(),
+            SyntaxKind.NumberToken => ParseNumberLiteral(),
+            _ => ParseNameExpression(),
+        };
 
         private ExpressionSyntax ParseParenthesizedExpression()
             => new ParenthesizedExpressionSyntax(
-                MatchToken(SyntaxKind.OpenParenthesisToken), 
-                ParseExpression(), 
+                MatchToken(SyntaxKind.OpenParenthesisToken),
+                ParseExpression(),
                 MatchToken(SyntaxKind.CloseParenthesisToken));
 
-        private ExpressionSyntax ParseBooleanLiteral() => 
+        private ExpressionSyntax ParseBooleanLiteral() =>
             new LiteralExpressionSyntax(
                 Current.Kind == SyntaxKind.TrueKeyword ? MatchToken(SyntaxKind.TrueKeyword) :
                         MatchToken(SyntaxKind.FalseKeyword),
@@ -127,7 +121,7 @@ namespace Compiler.CodeAnalysis.Syntax
         private ExpressionSyntax ParseNumberLiteral()
             => new LiteralExpressionSyntax(MatchToken(SyntaxKind.NumberToken));
 
-        private ExpressionSyntax ParseNameExpression() => 
+        private ExpressionSyntax ParseNameExpression() =>
             new NameExpressionSyntax(MatchToken(SyntaxKind.IdentifierToken));
     }
 }

@@ -1,11 +1,10 @@
-﻿using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using System;
-
-using Compiler.CodeAnalysis;
+﻿using Compiler.CodeAnalysis;
 using Compiler.CodeAnalysis.Syntax;
 using Compiler.CodeAnalysis.Text;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Compiler
 {
@@ -69,7 +68,7 @@ namespace Compiler
                         var line = syntaxTree.Text.Lines[lineIndex];
                         var lineNumber = lineIndex + 1;
                         var character = err.Span.Start - line.Start + 1;
-                        
+
                         var prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start);
                         var suffixSpan = TextSpan.FromBounds(err.Span.End, line.End);
 

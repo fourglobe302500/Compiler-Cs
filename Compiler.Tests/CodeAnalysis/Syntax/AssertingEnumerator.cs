@@ -1,7 +1,7 @@
-using System;
-using System.Linq;
-using System.Collections.Generic;
 using Compiler.CodeAnalysis.Syntax;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Compiler.Tests.CodeAnalysis.Syntax
@@ -11,12 +11,10 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
         private readonly IEnumerator<SyntaxNode> _enumerator;
         private bool _hasError;
 
-        public AssertingEnumerator(SyntaxNode node)
-        {
-            _enumerator = Flatten(node).GetEnumerator();
-        }
+        public AssertingEnumerator(SyntaxNode node) => _enumerator = Flatten(node).GetEnumerator();
 
         private bool MarkFailed() => !(_hasError = true);
+
         public void Dispose()
         {
             if (!_hasError)

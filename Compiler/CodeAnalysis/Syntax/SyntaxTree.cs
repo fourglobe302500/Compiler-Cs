@@ -1,6 +1,6 @@
-using System.Collections.Immutable;
-using System.Collections.Generic;
 using Compiler.CodeAnalysis.Text;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
@@ -23,10 +23,10 @@ namespace Compiler.CodeAnalysis.Syntax
         public ExpressionSyntax Root { get; }
         public SyntaxToken EndOfFileToken { get; }
 
-        public static SyntaxTree Parse(string text) => 
+        public static SyntaxTree Parse(string text) =>
             Parse(SourceText.From(text));
 
-        public static SyntaxTree Parse(SourceText text) => 
+        public static SyntaxTree Parse(SourceText text) =>
             new Parser(text).Parse();
 
         public static IEnumerable<SyntaxToken> ParseTokens(string text) =>

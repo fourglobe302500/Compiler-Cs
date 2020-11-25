@@ -1,8 +1,8 @@
+using Compiler.CodeAnalysis.Text;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Collections.Generic;
-using Compiler.CodeAnalysis.Text;
 
 namespace Compiler.CodeAnalysis.Syntax
 {
@@ -46,6 +46,6 @@ namespace Compiler.CodeAnalysis.Syntax
 
                 return writer.ToString();
             }
-        } 
+        }
     }
-}   
+}
