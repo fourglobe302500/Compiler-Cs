@@ -20,12 +20,12 @@ namespace Compiler.CodeAnalysis.Text
 
         public int GetLineIndex(int position)
         {
-            var lower = 0;
-            var upper = Lines.Length - 1;
+            int lower = 0;
+            int upper = Lines.Length - 1;
             while (lower <= upper)
             {
-                var index = lower + (upper - lower) / 2;
-                var start = Lines[index].Start;
+                int index = lower + (upper - lower) / 2;
+                int start = Lines[index].Start;
                 if (position == start)
                     return index;
                 if (position > start)
@@ -39,13 +39,13 @@ namespace Compiler.CodeAnalysis.Text
 
         private static ImmutableArray<TextLine> ParseLine(SourceText sourceText, string text)
         {
-            var result = ImmutableArray.CreateBuilder<TextLine>();
-            var lineStart = 0;
-            var position = 0;
+            ImmutableArray<TextLine>.Builder result = ImmutableArray.CreateBuilder<TextLine>();
+            int lineStart = 0;
+            int position = 0;
 
             while (position < text.Length)
             {
-                var lineBreakWidth = GetLineBreakWidth(text, position);
+                int lineBreakWidth = GetLineBreakWidth(text, position);
                 if (lineBreakWidth == 0)
                     position++;
                 else
@@ -63,15 +63,15 @@ namespace Compiler.CodeAnalysis.Text
 
         private static void AddLine(ImmutableArray<TextLine>.Builder result, SourceText sourceText, int lineStart, int position, int lineBreakWidth)
         {
-            var lineLength = position - lineStart;
-            var line = new TextLine(sourceText, lineStart, lineLength, lineLength + lineBreakWidth);
+            int lineLength = position - lineStart;
+            TextLine line = new TextLine(sourceText, lineStart, lineLength, lineLength + lineBreakWidth);
             result.Add(line);
         }
 
         private static int GetLineBreakWidth(string text, int position)
         {
-            var c = text[position];
-            var l = position + 1 >= text.Length ? '\0' : text[position + 1];
+            char c = text[position];
+            char l = position + 1 >= text.Length ? '\0' : text[position + 1];
             if (c == '\r' && l == '\n')
                 return 2;
             if (c == '\r' || c == '\n')

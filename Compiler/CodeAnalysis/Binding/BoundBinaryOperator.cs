@@ -98,7 +98,7 @@ namespace Compiler.CodeAnalysis.Binding
 
         public static BoundBinaryOperator Bind(SyntaxKind syntaxKind, Type leftType, Type rightType)
         {
-            foreach (var op in _operators.Where(op => op.SyntaxKind == syntaxKind && op.LeftType == leftType && op.RightType == rightType))
+            foreach (BoundBinaryOperator op in _operators.Where(op => op.SyntaxKind == syntaxKind && op.LeftType == leftType && op.RightType == rightType))
             {
                 return op;
             }

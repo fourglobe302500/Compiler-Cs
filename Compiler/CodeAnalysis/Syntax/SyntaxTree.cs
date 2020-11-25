@@ -34,10 +34,10 @@ namespace Compiler.CodeAnalysis.Syntax
 
         public static IEnumerable<SyntaxToken> ParseTokens(SourceText text)
         {
-            var lexer = new Lexer(text);
+            Lexer lexer = new Lexer(text);
             while (true)
             {
-                var token = lexer.Lex();
+                SyntaxToken token = lexer.Lex();
                 if (token.Kind == SyntaxKind.EndOfFileToken)
                     break;
                 yield return token;

@@ -24,15 +24,15 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
 
         private static IEnumerable<SyntaxNode> Flatten(SyntaxNode node)
         {
-            var stack = new Stack<SyntaxNode>();
+            Stack<SyntaxNode> stack = new Stack<SyntaxNode>();
             stack.Push(node);
 
             while (stack.Count > 0)
             {
-                var n = stack.Pop();
+                SyntaxNode n = stack.Pop();
                 yield return n;
 
-                foreach (var child in n.GetChildren().Reverse())
+                foreach (SyntaxNode child in n.GetChildren().Reverse())
                     stack.Push(child);
             }
         }
@@ -57,7 +57,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             {
                 Assert.True(_enumerator.MoveNext());
                 Assert.Equal(kind, _enumerator.Current.Kind);
-                var token = Assert.IsType<SyntaxToken>(_enumerator.Current);
+                SyntaxToken token = Assert.IsType<SyntaxToken>(_enumerator.Current);
                 Assert.Equal(text, token.Text);
             }
             catch when (MarkFailed())

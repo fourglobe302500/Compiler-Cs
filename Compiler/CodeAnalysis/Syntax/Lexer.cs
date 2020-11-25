@@ -119,7 +119,7 @@ namespace Compiler.CodeAnalysis.Syntax
                     break;
             }
             _position++;
-            var text = SyntaxFacts.GetText(_kind);
+            string text = SyntaxFacts.GetText(_kind);
             if (text == null)
                 text = _text.ToString(_start, _position - _start);
             return new SyntaxToken(_kind, _start, text, _value);
@@ -129,9 +129,9 @@ namespace Compiler.CodeAnalysis.Syntax
         {
             while (char.IsDigit(Current))
                 _position++;
-            var length = _position - _start;
-            var text = _text.ToString(_start, length);
-            if (!int.TryParse(text, out var value))
+            int length = _position - _start;
+            string text = _text.ToString(_start, length);
+            if (!int.TryParse(text, out int value))
                 _diagnostics.ReportInvalidNumber(
                     new TextSpan(_start, length), text, typeof(int));
             _value = value;
@@ -149,8 +149,8 @@ namespace Compiler.CodeAnalysis.Syntax
         {
             while (char.IsLetter(Current))
                 _position++;
-            var length = _position - _start;
-            var text = _text.ToString(_start, length);
+            int length = _position - _start;
+            string text = _text.ToString(_start, length);
             _kind = SyntaxFacts.GetKeywordKind(text);
         }
     }

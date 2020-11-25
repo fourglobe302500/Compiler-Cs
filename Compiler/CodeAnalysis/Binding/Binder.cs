@@ -33,8 +33,8 @@ namespace Compiler.CodeAnalysis.Binding
 
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
-            var name = syntax.IdentifierToken.Text;
-            var variable = _variables.Keys.FirstOrDefault(v => v.Name == name);
+            string name = syntax.IdentifierToken.Text;
+            VariableSymbol variable = _variables.Keys.FirstOrDefault(v => v.Name == name);
 
             if (variable == null)
             {
@@ -46,13 +46,13 @@ namespace Compiler.CodeAnalysis.Binding
 
         private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
         {
-            var name = syntax.IdentifierToken.Text;
-            var boundExpression = BindExpression(syntax.Expression);
+            string name = syntax.IdentifierToken.Text;
+            BoundExpression boundExpression = BindExpression(syntax.Expression);
 
-            var existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
+            VariableSymbol existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
             if (existingVariable != null)
                 _variables.Remove(existingVariable);
-            var variable = new VariableSymbol(name, boundExpression.Type);
+            VariableSymbol variable = new VariableSymbol(name, boundExpression.Type);
             _variables[variable] = null;
 
             return new BoundAssigmentExpression(variable, boundExpression);
@@ -61,8 +61,8 @@ namespace Compiler.CodeAnalysis.Binding
         private BoundExpression BindUnaryExpression(
           UnaryExpressionSyntax syntax)
         {
-            var boundOperand = BindExpression(syntax.Operand);
-            var boundOperator = BoundUnaryOperator.Bind(
+            BoundExpression boundOperand = BindExpression(syntax.Operand);
+            BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(
               syntax.OperatorToken.Kind,
               boundOperand.Type);
             if (boundOperator == null)
@@ -79,9 +79,9 @@ namespace Compiler.CodeAnalysis.Binding
         private BoundExpression BindBinaryExpression(
           BinaryExpressionSyntax syntax)
         {
-            var boundLeft = BindExpression(syntax.Left);
-            var boundRight = BindExpression(syntax.Right);
-            var boundOperator = BoundBinaryOperator.Bind(
+            BoundExpression boundLeft = BindExpression(syntax.Left);
+            BoundExpression boundRight = BindExpression(syntax.Right);
+            BoundBinaryOperator boundOperator = BoundBinaryOperator.Bind(
               syntax.OperatorToken.Kind,
               boundLeft.Type,
               boundRight.Type);

@@ -51,7 +51,7 @@ namespace Compiler.CodeAnalysis.Binding
 
         public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, Type operandType)
         {
-            foreach (var op in _operators.Where(op => op.SyntaxKind == syntaxKind && op.OperandType == operandType))
+            foreach (BoundUnaryOperator op in _operators.Where(op => op.SyntaxKind == syntaxKind && op.OperandType == operandType))
             {
                 return op;
             }
