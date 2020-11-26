@@ -35,18 +35,11 @@ namespace Compiler.CodeAnalysis.Syntax
         {
             bool isToConsole = writer == Console.Out;
             if (isToConsole)
-            {
                 Console.ForegroundColor = ConsoleColor.DarkGray;
-                writer.Write($"{indent}{( last ? "└──" : "├──" )}");
+            writer.Write($"{indent}{( last ? "└──" : "├──" )}");
+            if (isToConsole)
                 Console.ForegroundColor = node is SyntaxToken ? ConsoleColor.Blue : ConsoleColor.Cyan;
-                writer.Write(node.Kind);
-            }
-            else
-            {
-                writer.Write(indent);
-                writer.Write(last ? "└──" : "├──");
-                writer.Write(node.Kind);
-            }
+            writer.Write(node.Kind);
             if (node is SyntaxToken t && t.Value != null)
                 writer.Write($": {t.Value}");
             if (isToConsole)
