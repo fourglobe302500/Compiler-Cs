@@ -2,10 +2,8 @@ namespace Compiler.CodeAnalysis.Syntax
 {
     public enum SyntaxKind
     {
-        //TODO:
         //Tokens
         EndOfFileToken,
-
         InvalidToken,
         IdentifierToken,
         WhiteSpaceToken,
@@ -17,7 +15,6 @@ namespace Compiler.CodeAnalysis.Syntax
 
         //Operators
         PlusToken,
-
         MinusToken,
         StarToken,
         SlashToken,
@@ -26,7 +23,6 @@ namespace Compiler.CodeAnalysis.Syntax
 
         //Expressions
         LiteralExpression,
-
         NameExpression,
         AssigmentExpression,
         UnaryExpression,
@@ -35,12 +31,10 @@ namespace Compiler.CodeAnalysis.Syntax
 
         //Keywords
         TrueKeyword,
-
         FalseKeyword,
 
         //Logical Operators
         LogicalOrToken,
-
         LogicalAndToken,
         NotEqualsToken,
         DoubleEqualsToken,
@@ -48,5 +42,8 @@ namespace Compiler.CodeAnalysis.Syntax
         LessThenToken,
         GreaterOrEqualsThenToken,
         GreaterThenToken,
+
+        //Node
+        CompilationUnit,
     }
 }

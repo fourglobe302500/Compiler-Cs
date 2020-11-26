@@ -1,4 +1,5 @@
 using Compiler.CodeAnalysis.Text;
+
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -36,7 +37,7 @@ namespace Compiler.CodeAnalysis.Syntax
         public DiagnosticBag Diagnostics => _diagnostics;
 
         private SyntaxToken Peek(int offset) => _position + offset
-            >= _tokens.Length ? _tokens[_tokens.Length - 1] :
+            >= _tokens.Length ? _tokens[^1] :
             _tokens[_position + offset];
 
         private SyntaxToken Current => Peek(0);
@@ -58,12 +59,7 @@ namespace Compiler.CodeAnalysis.Syntax
             return new SyntaxToken(kind, Current.Position, null, null);
         }
 
-        public SyntaxTree Parse()
-        {
-            ExpressionSyntax root = ParseExpression();
-            SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxTree(_text, Diagnostics.ToImmutableArray(), root, endOfFileToken);
-        }
+        public CompilationUnitSyntax ParseCompilationUnit ( ) => new CompilationUnitSyntax(ParseExpression(), MatchToken(SyntaxKind.EndOfFileToken));
 
         private ExpressionSyntax ParseExpression() => ParseAssigmentExpression();
 
@@ -77,11 +73,9 @@ namespace Compiler.CodeAnalysis.Syntax
             ExpressionSyntax left;
             int unaryOperatorPrecedence =
             Current.Kind.GetUnaryOperatorPrecedence();
-            if (unaryOperatorPrecedence == 0 ||
-                unaryOperatorPrecedence < parentPrecedence)
-                left = ParsePrimaryExpression();
-            else
-                left = new UnaryExpressionSyntax(
+            left = unaryOperatorPrecedence == 0 || unaryOperatorPrecedence < parentPrecedence
+                ? ParsePrimaryExpression()
+                : new UnaryExpressionSyntax(
                 NextToken(),
                 ParseBinaryExpression(unaryOperatorPrecedence));
             while (true)
