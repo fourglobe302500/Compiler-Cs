@@ -76,7 +76,7 @@ namespace Compiler.CodeAnalysis.Binding
             string name = syntax.IdentifierToken.Text;
             BoundExpression boundExpression = BindExpression(syntax.Expression);
 
-            if (_scope.TryLookup(name, out var variable))
+            if (!_scope.TryLookup(name, out var variable))
             {
                 variable = new VariableSymbol(name, boundExpression.Type);
                 _scope.TryDeclare(variable);
