@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 using Compiler.CodeAnalysis.Syntax;
 using Compiler.CodeAnalysis.Text;
-
 namespace Compiler.CodeAnalysis
 {
     internal sealed class DiagnosticBag : IEnumerable<Diagnostic>

@@ -1,5 +1,4 @@
 using System;
-
 namespace Compiler.CodeAnalysis
 {
     public sealed class VariableSymbol
@@ -10,7 +9,6 @@ namespace Compiler.CodeAnalysis
             IsReadOnly = isReadOnly;
             Type = type;
         }
-
         public string Name { get; }
         public bool IsReadOnly { get; }
         public Type Type { get; }

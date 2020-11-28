@@ -1,8 +1,9 @@
-using Compiler.CodeAnalysis.Syntax;
 using System.Collections.Generic;
-using Xunit;
 using System.Linq;
 
+using Compiler.CodeAnalysis.Syntax;
+
+using Xunit;
 namespace Compiler.Tests.CodeAnalysis.Syntax
 {
     public class ParserTests
@@ -17,7 +18,6 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             string op2Text = SyntaxFacts.GetText(op2);
             string text = $"a {op1Text} b {op2Text} c";
             ExpressionSyntax expression = ParseExpression(text);
-
             if (op1Prec >= op2Prec)
                 //      op2
                 //     /  \
@@ -71,7 +71,6 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                     e.AssertToken(SyntaxKind.IdentifierToken, "c");
                 }
         }
-
         [Theory]
         [MemberData(nameof(GetUnaryOperatorPairsData))]
         public void Parser_UnaryExpression_HonorsPrecedences(
@@ -132,14 +131,12 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                     e.AssertToken(SyntaxKind.IdentifierToken, "b");
                 }
         }
-
-        public static IEnumerable<object[]> GetBinaryOperatorPairsData() => from op1 in SyntaxFacts.GetBinaryOperatorKinds()
-                                                                            from op2 in SyntaxFacts.GetBinaryOperatorKinds()
-                                                                            select new object[] { op1, op2 };
-
-        public static IEnumerable<object[]> GetUnaryOperatorPairsData() => from unary in SyntaxFacts.GetUnaryOperatorKinds()
-                                                                           from binary in SyntaxFacts.GetBinaryOperatorKinds()
-                                                                           select new object[] { unary, binary };
-        private static ExpressionSyntax ParseExpression ( string text ) => Assert.IsType<ExpressionStatementSyntax>(SyntaxTree.Parse(text).Root.Statement).Expression;
+        public static IEnumerable<object[]> GetBinaryOperatorPairsData( ) => from op1 in SyntaxFacts.GetBinaryOperatorKinds()
+                                                                             from op2 in SyntaxFacts.GetBinaryOperatorKinds()
+                                                                             select new object[] { op1, op2 };
+        public static IEnumerable<object[]> GetUnaryOperatorPairsData( ) => from unary in SyntaxFacts.GetUnaryOperatorKinds()
+                                                                            from binary in SyntaxFacts.GetBinaryOperatorKinds()
+                                                                            select new object[] { unary, binary };
+        private static ExpressionSyntax ParseExpression(string text) => Assert.IsType<ExpressionStatementSyntax>(SyntaxTree.Parse(text).Root.Statement).Expression;
     }
 }

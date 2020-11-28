@@ -1,9 +1,8 @@
-﻿using Compiler.CodeAnalysis.Binding;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
+using Compiler.CodeAnalysis.Binding;
 namespace Compiler.CodeAnalysis
 {
     internal sealed class Evaluator
@@ -16,14 +15,12 @@ namespace Compiler.CodeAnalysis
             _root = root;
             _variables = variables;
         }
-
-        public object Evaluate ( )
+        public object Evaluate( )
         {
             EvaluateStatement(_root);
             return _lastValue;
         }
-
-        private void EvaluateStatement ( BoundStatement statement )
+        private void EvaluateStatement(BoundStatement statement)
         {
             switch (statement.Kind)
             {
@@ -40,22 +37,11 @@ namespace Compiler.CodeAnalysis
                     throw new Exception($"Unexpected node {statement.Kind}");
             }
         }
-
-        private void EvaluateBlockStatement ( BoundBlockStatement statement )
-        {
-            statement.Statements.ToImmutableList().ForEach(s => EvaluateStatement(s));
-        }
+        private void EvaluateBlockStatement(BoundBlockStatement statement) => statement.Statements.ToImmutableList().ForEach(s => EvaluateStatement(s));
         private void EvaluateVariableDeclaration(BoundVariableDeclaration statement)
-        {
-            var value = EvaluateExpression(statement.Initializer);
-            _variables[statement.Variable] = value;
-            _lastValue = value;
-        }
-        private void EvaluateExpressionStatement(BoundExpressionStatement statement)
-        {
-            _lastValue = EvaluateExpression(statement.Expression);
-        }
-        private object EvaluateExpression ( BoundExpression node ) => node switch {
+            => _lastValue = _variables[statement.Variable] = EvaluateExpression(statement.Initializer);
+        private void EvaluateExpressionStatement(BoundExpressionStatement statement) => _lastValue = EvaluateExpression(statement.Expression);
+        private object EvaluateExpression(BoundExpression node) => node switch {
             BoundLiteralExpression l => EvaluateLiteralExpression(l),
             BoundVariableExpression v => EvaluateVariableExpression(v),
             BoundAssigmentExpression a => EvaluateAssigmentExpression(a),
@@ -63,21 +49,16 @@ namespace Compiler.CodeAnalysis
             BoundBinaryExpression b => EvaluateBinaryExpression(b),
             _ => throw new Exception($"Unexpected node {node.Kind}"),
         };
-        private static object EvaluateLiteralExpression ( BoundLiteralExpression l ) => l.Value;
-        private object EvaluateVariableExpression ( BoundVariableExpression v ) => _variables[v.Variable];
-        private object EvaluateAssigmentExpression ( BoundAssigmentExpression a )
-        {
-            object value = EvaluateExpression(a.Expression);
-            _variables[a.Variable] = value;
-            return value;
-        }
-        private object EvaluateUnaryExpression ( BoundUnaryExpression u ) => u.Op.Kind switch {
+        private static object EvaluateLiteralExpression(BoundLiteralExpression l) => l.Value;
+        private object EvaluateVariableExpression(BoundVariableExpression v) => _variables[v.Variable];
+        private object EvaluateAssigmentExpression(BoundAssigmentExpression a) => _variables[a.Variable] = EvaluateExpression(a.Expression);
+        private object EvaluateUnaryExpression(BoundUnaryExpression u) => u.Op.Kind switch {
             BoundUnaryOperatorKind.Indentity => (int)EvaluateExpression(u.Operand),
             BoundUnaryOperatorKind.Negation => -(int)EvaluateExpression(u.Operand),
             BoundUnaryOperatorKind.LogicalNegation => !(bool)EvaluateExpression(u.Operand),
             _ => throw new Exception($"Unexpected unary operator {u.Op}"),
         };
-        private object EvaluateBinaryExpression ( BoundBinaryExpression b ) => b.Op.Kind switch {
+        private object EvaluateBinaryExpression(BoundBinaryExpression b) => b.Op.Kind switch {
             BoundBinaryOperatorKind.Addition => (int)EvaluateExpression(b.Left) + (int)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Subtraction => (int)EvaluateExpression(b.Left) - (int)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Multiplication => (int)EvaluateExpression(b.Left) * (int)EvaluateExpression(b.Right),

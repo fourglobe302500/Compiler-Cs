@@ -1,8 +1,9 @@
+using System.Collections.Generic;
+
 using Compiler.CodeAnalysis;
 using Compiler.CodeAnalysis.Syntax;
-using System.Collections.Generic;
-using Xunit;
 
+using Xunit;
 namespace Compiler.Tests.CodeAnalysis
 {
     public class EvaluationTests

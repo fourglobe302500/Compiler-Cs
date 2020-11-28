@@ -2,7 +2,7 @@
 {
     public sealed class CompilationUnitSyntax : SyntaxNode
     {
-        public CompilationUnitSyntax ( StatementSyntax statement, SyntaxToken endOfFileToken )
+        public CompilationUnitSyntax(StatementSyntax statement, SyntaxToken endOfFileToken)
         {
             Statement = statement;
             EndOfFileToken = endOfFileToken;

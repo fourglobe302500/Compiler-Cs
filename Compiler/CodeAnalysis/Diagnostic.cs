@@ -1,5 +1,4 @@
 using Compiler.CodeAnalysis.Text;
-
 namespace Compiler.CodeAnalysis
 {
     public sealed class Diagnostic
@@ -9,10 +8,8 @@ namespace Compiler.CodeAnalysis
             Span = spam;
             Massage = massage;
         }
-
         public TextSpan Span { get; }
         public string Massage { get; }
-
-        public override string ToString() => Massage;
+        public override string ToString( ) => Massage;
     }
 }

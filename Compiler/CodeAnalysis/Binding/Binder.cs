@@ -12,50 +12,44 @@ namespace Compiler.CodeAnalysis.Binding
         public Binder(BoundScope parent) => _scope = new BoundScope(parent);
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax)
         {
-            var parentScope = CreateParentScopes(previous);
-            var binder = new Binder(parentScope);
-            var expression = binder.BindStatement(syntax.Statement);
-            var variables = binder._scope.Variables;
-            var diagnostics = binder.Diagnostics.ToImmutableArray();
-
-            if (previous != null)
-                diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
-
-            return new BoundGlobalScope(previous, diagnostics, variables, expression);
+            Binder binder = new Binder(CreateParentScopes(previous));
+            BoundStatement expression = binder.BindStatement(syntax.Statement);
+            return new BoundGlobalScope(
+                previous,
+                previous == null ?
+                    binder.Diagnostics.ToImmutableArray() :
+                    binder.Diagnostics.ToImmutableArray()
+                                      .InsertRange(0, previous.Diagnostics),
+                binder._scope.Variables,
+                expression);
         }
         private static BoundScope CreateParentScopes(BoundGlobalScope previous)
         {
-            var stack = new Stack<BoundGlobalScope>();
+            Stack<BoundGlobalScope> stack = new Stack<BoundGlobalScope>();
             while (previous != null)
             {
                 stack.Push(previous);
                 previous = previous.Previous;
             }
             BoundScope parent = null;
-
             while (stack.Count > 0)
             {
-                previous = stack.Pop();
-                var scope = new BoundScope(parent);
-                previous.Variables.ToImmutableList().ForEach(v => scope.TryDeclare(v));
+                BoundScope scope = new BoundScope(parent);
+                stack.Pop().Variables.ToImmutableList().ForEach(v => scope.TryDeclare(v));
                 parent = scope;
             }
-
             return parent;
         }
         public DiagnosticBag Diagnostics => _diagnostics;
-        private BoundStatement BindStatement(StatementSyntax syntax)
-        {
-            return syntax.Kind switch {
-                SyntaxKind.BlockStatement => BindBlockStatement((BlockStatementSyntax)syntax),
-                SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclarationSyntax)syntax),
-                SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
-                _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
-            };
-        }
+        private BoundStatement BindStatement(StatementSyntax syntax) => syntax.Kind switch {
+            SyntaxKind.BlockStatement => BindBlockStatement((BlockStatementSyntax)syntax),
+            SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclarationSyntax)syntax),
+            SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
+            _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
+        };
         private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
         {
-            var statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
             _scope = new BoundScope(_scope);
             syntax.Statements.ToImmutableList().ForEach(s => statements.Add(BindStatement(s)));
             _scope = _scope.Parent;
@@ -63,14 +57,10 @@ namespace Compiler.CodeAnalysis.Binding
         }
         private BoundVariableDeclaration BindVariableDeclaration(VariableDeclarationSyntax syntax)
         {
-            var name = syntax.Identifier.Text;
-            var isReadOnly = syntax.Keyword.Kind == SyntaxKind.DefKeyword;
-            var initializer = BindExpression(syntax.Initializer);
-            var variable = new VariableSymbol(name, isReadOnly, initializer.Type);
-
+            BoundExpression initializer = BindExpression(syntax.Initializer);
+            VariableSymbol variable = new VariableSymbol(syntax.Identifier.Text, syntax.Keyword.Kind == SyntaxKind.DefKeyword, initializer.Type);
             if (!_scope.TryDeclare(variable))
-                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, name);
-
+                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, syntax.Identifier.Text);
             return new BoundVariableDeclaration(variable, initializer);
         }
         private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
@@ -88,50 +78,37 @@ namespace Compiler.CodeAnalysis.Binding
           => new BoundLiteralExpression(syntax.Value ?? 0);
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
-            string name = syntax.IdentifierToken.Text;
-
-            if (!_scope.TryLookup(name, out var variable))
+            if (!_scope.TryLookup(syntax.IdentifierToken.Text, out VariableSymbol variable))
             {
-                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, syntax.IdentifierToken.Text);
                 return new BoundLiteralExpression(0);
             }
             return new BoundVariableExpression(variable);
         }
         private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
         {
-            string name = syntax.IdentifierToken.Text;
             BoundExpression boundExpression = BindExpression(syntax.Expression);
-
-            if (!_scope.TryLookup(name, out var variable))
+            if (!_scope.TryLookup(syntax.IdentifierToken.Text, out VariableSymbol variable))
             {
-                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
+                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, syntax.IdentifierToken.Text);
                 return boundExpression;
             }
-
             if (variable.IsReadOnly)
-                _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, name);
-
+                _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, syntax.IdentifierToken.Text);
             if (boundExpression.Type != variable.Type)
             {
                 _diagnostics.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
                 return boundExpression;
             }
-
             return new BoundAssigmentExpression(variable, boundExpression);
         }
-        private BoundExpression BindUnaryExpression(
-          UnaryExpressionSyntax syntax)
+        private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
         {
             BoundExpression boundOperand = BindExpression(syntax.Operand);
-            BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(
-              syntax.OperatorToken.Kind,
-              boundOperand.Type);
+            BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundOperand.Type);
             if (boundOperator == null)
             {
-                _diagnostics.ReportUndefinedUnaryOperator(
-                  syntax.OperatorToken.Span,
-                  syntax.OperatorToken.Text,
-                  boundOperand.Type);
+                _diagnostics.ReportUndefinedUnaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundOperand.Type);
                 return boundOperand;
             }
             return new BoundUnaryExpression(boundOperator, boundOperand);
@@ -141,17 +118,10 @@ namespace Compiler.CodeAnalysis.Binding
         {
             BoundExpression boundLeft = BindExpression(syntax.Left);
             BoundExpression boundRight = BindExpression(syntax.Right);
-            BoundBinaryOperator boundOperator = BoundBinaryOperator.Bind(
-              syntax.OperatorToken.Kind,
-              boundLeft.Type,
-              boundRight.Type);
+            BoundBinaryOperator boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
             if (boundOperator == null)
             {
-                _diagnostics.ReportUndefinedBinaryOperator(
-                  syntax.OperatorToken.Span,
-                  syntax.OperatorToken.Text,
-                  boundLeft.Type,
-                  boundRight.Type);
+                _diagnostics.ReportUndefinedBinaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundLeft.Type, boundRight.Type);
                 return boundLeft;
             }
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);

@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
-using System.Collections.Immutable;
 
 using Compiler.CodeAnalysis;
 using Compiler.CodeAnalysis.Syntax;
 using Compiler.CodeAnalysis.Text;
-
 namespace Compiler
 {
     internal static class Program
     {
-        private static void Main ( )
+        private static void Main( )
         {
             int LineNumber = 1;
             bool showTree = false;
@@ -75,7 +74,7 @@ namespace Compiler
                 if (!diagnostics.Any())
                 {
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine($"  =>{result.Value}");
+                    Console.WriteLine($" => {result.Value}");
                     Console.ResetColor();
                     previous = compilation;
                 }
@@ -83,13 +82,13 @@ namespace Compiler
                 {
                     foreach (
                         (Diagnostic err, int lineNumber, int character, TextSpan prefixSpan, TextSpan suffixSpan) in from err in diagnostics
-                                                                                         let lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start)
-                                                                                         let line = syntaxTree.Text.Lines[lineIndex]
-                                                                                         let lineNumber = lineIndex + 1
-                                                                                         let character = err.Span.Start - line.Start + 1
-                                                                                         let prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start)
-                                                                                         let suffixSpan = TextSpan.FromBounds(err.Span.End, line.End)
-                                                                                         select (err, lineNumber, character, prefixSpan, suffixSpan))
+                                                                                                                     let lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start)
+                                                                                                                     let line = syntaxTree.Text.Lines[lineIndex]
+                                                                                                                     let lineNumber = lineIndex + 1
+                                                                                                                     let character = err.Span.Start - line.Start + 1
+                                                                                                                     let prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start)
+                                                                                                                     let suffixSpan = TextSpan.FromBounds(err.Span.End, line.End)
+                                                                                                                     select (err, lineNumber, character, prefixSpan, suffixSpan))
                     {
                         Console.WriteLine();
                         Console.ForegroundColor = ConsoleColor.DarkRed;

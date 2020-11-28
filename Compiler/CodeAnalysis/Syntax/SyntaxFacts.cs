@@ -1,24 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 namespace Compiler.CodeAnalysis.Syntax
 {
     public static class SyntaxFacts
     {
-        public static int GetUnaryOperatorPrecedence(this SyntaxKind kind)
-        {
-            return kind switch
-            {
-                SyntaxKind.PlusToken => 7,
-                SyntaxKind.MinusToken => 7,
-                SyntaxKind.ExclamationToken => 7,
-                _ => 0,
-            };
-        }
-
-        public static int GetBinaryOperatorPrecedence(this SyntaxKind kind) => kind switch
-        {
+        public static int GetUnaryOperatorPrecedence(this SyntaxKind kind) => kind switch {
+            SyntaxKind.PlusToken => 7,
+            SyntaxKind.MinusToken => 7,
+            SyntaxKind.ExclamationToken => 7,
+            _ => 0,
+        };
+        public static int GetBinaryOperatorPrecedence(this SyntaxKind kind) => kind switch {
             SyntaxKind.PercentToken => 6,
             SyntaxKind.HatToken => 6,
             SyntaxKind.SlashToken => 5,
@@ -35,18 +28,18 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.LogicalOrToken => 1,
             _ => 0,
         };
-        public static SyntaxKind GetKeywordKind ( string text ) => text switch {
+        public static SyntaxKind GetKeywordKind(string text) => text switch {
             "true" => SyntaxKind.TrueKeyword,
             "false" => SyntaxKind.FalseKeyword,
             "var" => SyntaxKind.VarKeyword,
             "def" => SyntaxKind.DefKeyword,
             _ => SyntaxKind.IdentifierToken,
         };
-        public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds ( )
-            => ( (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind)) ).Where(kind => GetUnaryOperatorPrecedence(kind) > 0);
-        public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds ( )
-            => ( (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind)) ).Where(kind => GetBinaryOperatorPrecedence(kind) > 0);
-        public static string GetText ( SyntaxKind kind ) => kind switch {
+        public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds( )
+            => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Where(kind => GetUnaryOperatorPrecedence(kind) > 0);
+        public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds( )
+            => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Where(kind => GetBinaryOperatorPrecedence(kind) > 0);
+        public static string GetText(SyntaxKind kind) => kind switch {
             SyntaxKind.CloseParenthesisToken => ")",
             SyntaxKind.OpenParenthesisToken => "(",
             SyntaxKind.OpenBraceToken => "{",
