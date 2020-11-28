@@ -14,6 +14,7 @@ namespace Compiler
     {
         private static void Main ( )
         {
+            int LineNumber = 1;
             bool showTree = false;
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             StringBuilder textBuilder = new StringBuilder();
@@ -23,9 +24,9 @@ namespace Compiler
             {
                 Console.ForegroundColor = ConsoleColor.Green;
                 if (textBuilder.Length == 0)
-                    Console.Write("» ");
+                    Console.Write($"{string.Format("{0:00}", LineNumber++)}» ");
                 else
-                    Console.Write("· ");
+                    Console.Write($"{string.Format("{0:00}", LineNumber++)}· ");
 
                 Console.ForegroundColor = ConsoleColor.Gray;
                 string input = Console.ReadLine();
@@ -74,7 +75,7 @@ namespace Compiler
                 if (!diagnostics.Any())
                 {
                     Console.ForegroundColor = ConsoleColor.Magenta;
-                    Console.WriteLine(result.Value);
+                    Console.WriteLine($"  =>{result.Value}");
                     Console.ResetColor();
                     previous = compilation;
                 }
@@ -103,6 +104,7 @@ namespace Compiler
 
                     Console.WriteLine();
                 }
+                LineNumber = 1;
                 _ = textBuilder.Clear();
             }
         }
