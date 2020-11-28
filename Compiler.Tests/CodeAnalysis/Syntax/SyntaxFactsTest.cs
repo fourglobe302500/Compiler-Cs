@@ -1,8 +1,10 @@
-using System.Collections.Generic;
 using System;
-using Compiler.CodeAnalysis.Syntax;
-using Xunit;
+using System.Collections.Generic;
+using System.Linq;
 
+using Compiler.CodeAnalysis.Syntax;
+
+using Xunit;
 namespace Compiler.Tests.CodeAnalysis.Syntax
 {
     public class SyntaxFactsTest
@@ -11,20 +13,13 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
         [MemberData(nameof(GetSyntaxKindData))]
         public void SyntaxFact_GetText_BoundTrips(SyntaxKind kind)
         {
-            var text = SyntaxFacts.GetText(kind);
+            string text = SyntaxFacts.GetText(kind);
             if (text == null)
                 return;
-            var tokens = SyntaxTree.ParseTokens(text);
-            var token = Assert.Single(tokens);
+            SyntaxToken token = Assert.Single(SyntaxTree.ParseTokens(text));
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
         }
-
-        public static IEnumerable<object[]> GetSyntaxKindData()
-        {
-            var kinds = (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind));
-            foreach (var kind in kinds)
-                yield return new object[]{ kind };
-        }
+        public static IEnumerable<object[]> GetSyntaxKindData( ) => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Select(kind => (new object[] { kind }));
     }
 }

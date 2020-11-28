@@ -1,9 +1,9 @@
 namespace Compiler.CodeAnalysis.Binding
 {
-  internal enum BoundUnaryOperatorKind
-  {
-    Indentity,
-    Negation,
-    LogicalNegation,
-  }
+    internal enum BoundUnaryOperatorKind
+    {
+        Indentity,
+        Negation,
+        LogicalNegation,
+    }
 }

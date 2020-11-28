@@ -1,30 +1,37 @@
-﻿using System.Text;
+﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
-using System;
+using System.Text;
 
 using Compiler.CodeAnalysis;
 using Compiler.CodeAnalysis.Syntax;
 using Compiler.CodeAnalysis.Text;
-
 namespace Compiler
 {
     internal static class Program
     {
-        private static void Main()
+        private static void Main( )
         {
+            int LineNumber = 1;
             bool showTree = false;
-            var variables = new Dictionary<VariableSymbol, object>();
-            var textBuilder = new StringBuilder();
+            Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
+            StringBuilder textBuilder = new StringBuilder();
+            Compilation previous = null;
 
             while (true)
             {
+                Console.ForegroundColor = ConsoleColor.Green;
                 if (textBuilder.Length == 0)
-                    Console.Write("> ");
+                    Console.Write($"{string.Format("{0:00}", LineNumber++)}» ");
                 else
-                    Console.Write("| ");
-                var input = Console.ReadLine();
-                var isBlank = string.IsNullOrWhiteSpace(input);
+                    Console.Write($"{string.Format("{0:00}", LineNumber++)}· ");
+
+                Console.ForegroundColor = ConsoleColor.Gray;
+                string input = Console.ReadLine();
+                Console.ResetColor();
+
+                bool isBlank = string.IsNullOrWhiteSpace(input);
                 if (textBuilder.Length == 0)
                 {
                     if (isBlank)
@@ -40,19 +47,24 @@ namespace Compiler
                         case "#cls":
                             Console.Clear();
                             continue;
+                        case "#reset":
+                            previous = null;
+                            continue;
                     }
                 }
 
-                textBuilder.AppendLine(input);
-                var text = textBuilder.ToString();
-                var syntaxTree = SyntaxTree.Parse(text);
+                _ = textBuilder.AppendLine(input);
+                string text = textBuilder.ToString();
+                SyntaxTree syntaxTree = SyntaxTree.Parse(text);
 
                 if (!isBlank && syntaxTree.Diagnostics.Any())
                     continue;
 
-                var compilation = new Compilation(syntaxTree);
-                var result = compilation.Evaluate(variables);
-                var diagnostics = result.Diagnostics;
+                Compilation compilation = previous == null ?
+                                          new Compilation(syntaxTree) :
+                                          previous.ContinueWith(syntaxTree);
+                EvaluationResult result = compilation.Evaluate(variables);
+                ImmutableArray<Diagnostic> diagnostics = result.Diagnostics;
                 if (showTree)
                 {
                     Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -60,19 +72,24 @@ namespace Compiler
                     Console.ResetColor();
                 }
                 if (!diagnostics.Any())
-                    Console.WriteLine(result.Value);
+                {
+                    Console.ForegroundColor = ConsoleColor.Magenta;
+                    Console.WriteLine($" => {result.Value}");
+                    Console.ResetColor();
+                    previous = compilation;
+                }
                 else
                 {
-                    foreach (var err in diagnostics)
+                    foreach (
+                        (Diagnostic err, int lineNumber, int character, TextSpan prefixSpan, TextSpan suffixSpan) in from err in diagnostics
+                                                                                                                     let lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start)
+                                                                                                                     let line = syntaxTree.Text.Lines[lineIndex]
+                                                                                                                     let lineNumber = lineIndex + 1
+                                                                                                                     let character = err.Span.Start - line.Start + 1
+                                                                                                                     let prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start)
+                                                                                                                     let suffixSpan = TextSpan.FromBounds(err.Span.End, line.End)
+                                                                                                                     select (err, lineNumber, character, prefixSpan, suffixSpan))
                     {
-                        var lineIndex = syntaxTree.Text.GetLineIndex(err.Span.Start);
-                        var line = syntaxTree.Text.Lines[lineIndex];
-                        var lineNumber = lineIndex + 1;
-                        var character = err.Span.Start - line.Start + 1;
-                        
-                        var prefixSpan = TextSpan.FromBounds(line.Start, err.Span.Start);
-                        var suffixSpan = TextSpan.FromBounds(err.Span.End, line.End);
-
                         Console.WriteLine();
                         Console.ForegroundColor = ConsoleColor.DarkRed;
                         Console.WriteLine($"({lineNumber},{character}): {err} ");
@@ -83,9 +100,11 @@ namespace Compiler
                         Console.ResetColor();
                         Console.WriteLine(syntaxTree.Text.ToString(suffixSpan));
                     }
+
                     Console.WriteLine();
                 }
-                textBuilder.Clear();
+                LineNumber = 1;
+                _ = textBuilder.Clear();
             }
         }
     }

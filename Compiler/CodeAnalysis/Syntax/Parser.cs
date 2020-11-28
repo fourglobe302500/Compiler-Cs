@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Compiler.CodeAnalysis.Text;
+using System.Linq;
 
+using Compiler.CodeAnalysis.Text;
 namespace Compiler.CodeAnalysis.Syntax
 {
     internal sealed class Parser
@@ -9,13 +11,11 @@ namespace Compiler.CodeAnalysis.Syntax
         private readonly SyntaxToken[] _tokens;
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private readonly SourceText _text;
-
         private int _position;
-
         public Parser(SourceText text)
         {
-            var tokens = new List<SyntaxToken>();
-            var lexer = new Lexer(text);
+            List<SyntaxToken> tokens = new List<SyntaxToken>();
+            Lexer lexer = new Lexer(text);
             SyntaxToken token;
             do
             {
@@ -32,22 +32,18 @@ namespace Compiler.CodeAnalysis.Syntax
             _diagnostics.AddRange(lexer.Diagnostics);
             _text = text;
         }
-
         public DiagnosticBag Diagnostics => _diagnostics;
-        private SyntaxToken Peek(int offset) => _position + offset
-            >= _tokens.Length ? _tokens[_tokens.Length - 1] :
-            _tokens[_position + offset];
+        private SyntaxToken Peek(int offset) => _position + offset >= _tokens.Length ? _tokens[^1] : _tokens[_position + offset];
         private SyntaxToken Current => Peek(0);
         private SyntaxToken LookAhead => Peek(1);
         private SyntaxToken Last => Peek(-1);
-
-        public SyntaxToken NextToken()
+        public SourceText Text => _text;
+        public SyntaxToken NextToken( )
         {
-            var current = Current;
+            SyntaxToken current = Current;
             _position++;
             return current;
         }
-
         private SyntaxToken MatchToken(SyntaxKind kind)
         {
             if (Current.Kind == kind)
@@ -55,36 +51,47 @@ namespace Compiler.CodeAnalysis.Syntax
             _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
             return new SyntaxToken(kind, Current.Position, null, null);
         }
-
-        public SyntaxTree Parse()
+        public CompilationUnitSyntax ParseCompilationUnit( ) => new CompilationUnitSyntax(ParseStatement(), MatchToken(SyntaxKind.EndOfFileToken));
+        private StatementSyntax ParseStatement( ) => Current.Kind switch {
+            SyntaxKind.OpenBraceToken => ParseBlockStatement(),
+            var kind when new[] { SyntaxKind.VarKeyword, SyntaxKind.DefKeyword }.Contains(kind) => ParseVariableDeclaration(),
+            _ => ParseExpressionStatement()
+        };
+        private BlockStatementSyntax ParseBlockStatement( )
         {
-            ExpressionSyntax root = ParseExpression();
-            SyntaxToken endOfFileToken = MatchToken(SyntaxKind.EndOfFileToken);
-            return new SyntaxTree(_text, Diagnostics.ToImmutableArray(), root, endOfFileToken);
+            ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
+            SyntaxToken openBraceToken = MatchToken(SyntaxKind.OpenBraceToken);
+            while (Current.Kind != SyntaxKind.EndOfFileToken && Current.Kind != SyntaxKind.CloseBraceToken)
+            {
+                StatementSyntax statement = ParseStatement();
+                statements.Add(statement);
+            }
+            return new BlockStatementSyntax(openBraceToken, statements.ToImmutable(), MatchToken(SyntaxKind.CloseBraceToken));
         }
-
-        private ExpressionSyntax ParseExpression() => ParseAssigmentExpression();
-
-        private ExpressionSyntax ParseAssigmentExpression()=> 
+        private ExpressionStatementSyntax ParseExpressionStatement( ) => new ExpressionStatementSyntax(ParseExpression());
+        private VariableDeclarationSyntax ParseVariableDeclaration( )
+            => new VariableDeclarationSyntax(MatchToken(Current.Kind == SyntaxKind.VarKeyword ? SyntaxKind.VarKeyword : SyntaxKind.DefKeyword),
+                                             MatchToken(SyntaxKind.IdentifierToken),
+                                             MatchToken(SyntaxKind.AssigmentToken),
+                                             ParseExpression());
+        private ExpressionSyntax ParseExpression( ) => ParseAssigmentExpression();
+        private ExpressionSyntax ParseAssigmentExpression( ) =>
             Current.Kind == SyntaxKind.IdentifierToken && LookAhead.Kind == SyntaxKind.AssigmentToken ?
                 new AssigmentExpressionSyntax(NextToken(), NextToken(), ParseAssigmentExpression()) :
                 ParseBinaryExpression();
-
         private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
         {
             ExpressionSyntax left;
-            var unaryOperatorPrecedence =
+            int unaryOperatorPrecedence =
             Current.Kind.GetUnaryOperatorPrecedence();
-            if (unaryOperatorPrecedence == 0 ||
-                unaryOperatorPrecedence < parentPrecedence)
-                left = ParsePrimaryExpression();
-            else
-                left = new UnaryExpressionSyntax(
+            left = unaryOperatorPrecedence == 0 || unaryOperatorPrecedence < parentPrecedence
+                ? ParsePrimaryExpression()
+                : new UnaryExpressionSyntax(
                 NextToken(),
                 ParseBinaryExpression(unaryOperatorPrecedence));
             while (true)
             {
-                var precedence = Current.Kind.GetBinaryOperatorPrecedence();
+                int precedence = Current.Kind.GetBinaryOperatorPrecedence();
                 if (precedence == 0 || precedence <= parentPrecedence)
                     break;
                 left = new BinaryExpressionSyntax(
@@ -94,40 +101,26 @@ namespace Compiler.CodeAnalysis.Syntax
             }
             return left;
         }
-
-        private ExpressionSyntax ParsePrimaryExpression()
-        {
-            switch (Current.Kind)
-            {
-                case SyntaxKind.OpenParenthesisToken:
-                    return ParseParenthesizedExpression();
-                case SyntaxKind.TrueKeyword:
-                case SyntaxKind.FalseKeyword:
-                    return ParseBooleanLiteral();
-                case SyntaxKind.NumberToken:
-                    return ParseNumberLiteral();
-                case SyntaxKind.IdentifierToken:
-                default:
-                    return ParseNameExpression();
-            }
-        }
-
-        private ExpressionSyntax ParseParenthesizedExpression()
+        private ExpressionSyntax ParsePrimaryExpression( ) => Current.Kind switch {
+            SyntaxKind.OpenParenthesisToken => ParseParenthesizedExpression(),
+            SyntaxKind.TrueKeyword => ParseBooleanLiteral(),
+            SyntaxKind.FalseKeyword => ParseBooleanLiteral(),
+            SyntaxKind.NumberToken => ParseNumberLiteral(),
+            _ => ParseNameExpression(),
+        };
+        private ExpressionSyntax ParseParenthesizedExpression( )
             => new ParenthesizedExpressionSyntax(
-                MatchToken(SyntaxKind.OpenParenthesisToken), 
-                ParseExpression(), 
+                MatchToken(SyntaxKind.OpenParenthesisToken),
+                ParseExpression(),
                 MatchToken(SyntaxKind.CloseParenthesisToken));
-
-        private ExpressionSyntax ParseBooleanLiteral() => 
+        private ExpressionSyntax ParseBooleanLiteral( ) =>
             new LiteralExpressionSyntax(
                 Current.Kind == SyntaxKind.TrueKeyword ? MatchToken(SyntaxKind.TrueKeyword) :
                         MatchToken(SyntaxKind.FalseKeyword),
                 Last.Kind == SyntaxKind.TrueKeyword);
-
-        private ExpressionSyntax ParseNumberLiteral()
+        private ExpressionSyntax ParseNumberLiteral( )
             => new LiteralExpressionSyntax(MatchToken(SyntaxKind.NumberToken));
-
-        private ExpressionSyntax ParseNameExpression() => 
+        private ExpressionSyntax ParseNameExpression( ) =>
             new NameExpressionSyntax(MatchToken(SyntaxKind.IdentifierToken));
     }
 }

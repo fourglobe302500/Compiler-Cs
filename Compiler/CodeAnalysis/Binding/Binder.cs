@@ -1,113 +1,131 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Compiler.CodeAnalysis.Syntax;
+using System.Collections.Immutable;
 
+using Compiler.CodeAnalysis.Syntax;
 namespace Compiler.CodeAnalysis.Binding
 {
-  internal sealed class Binder
-  {
-    private readonly Dictionary<VariableSymbol, object> _variables;
-    private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
-
-    public Binder(Dictionary<VariableSymbol, object> variables)
+    internal sealed class Binder
     {
-      _variables = variables;
+        private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
+        private BoundScope _scope;
+        public Binder(BoundScope parent) => _scope = new BoundScope(parent);
+        public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax)
+        {
+            Binder binder = new Binder(CreateParentScopes(previous));
+            BoundStatement expression = binder.BindStatement(syntax.Statement);
+            return new BoundGlobalScope(
+                previous,
+                previous == null ?
+                    binder.Diagnostics.ToImmutableArray() :
+                    binder.Diagnostics.ToImmutableArray()
+                                      .InsertRange(0, previous.Diagnostics),
+                binder._scope.Variables,
+                expression);
+        }
+        private static BoundScope CreateParentScopes(BoundGlobalScope previous)
+        {
+            Stack<BoundGlobalScope> stack = new Stack<BoundGlobalScope>();
+            while (previous != null)
+            {
+                stack.Push(previous);
+                previous = previous.Previous;
+            }
+            BoundScope parent = null;
+            while (stack.Count > 0)
+            {
+                BoundScope scope = new BoundScope(parent);
+                stack.Pop().Variables.ToImmutableList().ForEach(v => scope.TryDeclare(v));
+                parent = scope;
+            }
+            return parent;
+        }
+        public DiagnosticBag Diagnostics => _diagnostics;
+        private BoundStatement BindStatement(StatementSyntax syntax) => syntax.Kind switch {
+            SyntaxKind.BlockStatement => BindBlockStatement((BlockStatementSyntax)syntax),
+            SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclarationSyntax)syntax),
+            SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
+            _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
+        };
+        private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
+        {
+            ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
+            _scope = new BoundScope(_scope);
+            syntax.Statements.ToImmutableList().ForEach(s => statements.Add(BindStatement(s)));
+            _scope = _scope.Parent;
+            return new BoundBlockStatement(statements.ToImmutable());
+        }
+        private BoundVariableDeclaration BindVariableDeclaration(VariableDeclarationSyntax syntax)
+        {
+            BoundExpression initializer = BindExpression(syntax.Initializer);
+            VariableSymbol variable = new VariableSymbol(syntax.Identifier.Text, syntax.Keyword.Kind == SyntaxKind.DefKeyword, initializer.Type);
+            if (!_scope.TryDeclare(variable))
+                _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, syntax.Identifier.Text);
+            return new BoundVariableDeclaration(variable, initializer);
+        }
+        private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
+            => new BoundExpressionStatement(BindExpression(syntax.Expression));
+        private BoundExpression BindExpression(ExpressionSyntax syntax) => syntax.Kind switch {
+            SyntaxKind.LiteralExpression => BindLiteralExpression((LiteralExpressionSyntax)syntax),
+            SyntaxKind.ParenthesizedExpression => BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax),
+            SyntaxKind.NameExpression => BindNameExpression((NameExpressionSyntax)syntax),
+            SyntaxKind.AssigmentExpression => BindAssigmentxpression((AssigmentExpressionSyntax)syntax),
+            SyntaxKind.UnaryExpression => BindUnaryExpression((UnaryExpressionSyntax)syntax),
+            SyntaxKind.BinaryExpression => BindBinaryExpression((BinaryExpressionSyntax)syntax),
+            _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
+        };
+        private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
+          => new BoundLiteralExpression(syntax.Value ?? 0);
+        private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
+        {
+            if (!_scope.TryLookup(syntax.IdentifierToken.Text, out VariableSymbol variable))
+            {
+                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, syntax.IdentifierToken.Text);
+                return new BoundLiteralExpression(0);
+            }
+            return new BoundVariableExpression(variable);
+        }
+        private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
+        {
+            BoundExpression boundExpression = BindExpression(syntax.Expression);
+            if (!_scope.TryLookup(syntax.IdentifierToken.Text, out VariableSymbol variable))
+            {
+                _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, syntax.IdentifierToken.Text);
+                return boundExpression;
+            }
+            if (variable.IsReadOnly)
+                _diagnostics.ReportCannotAssign(syntax.EqualsToken.Span, syntax.IdentifierToken.Text);
+            if (boundExpression.Type != variable.Type)
+            {
+                _diagnostics.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
+                return boundExpression;
+            }
+            return new BoundAssigmentExpression(variable, boundExpression);
+        }
+        private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
+        {
+            BoundExpression boundOperand = BindExpression(syntax.Operand);
+            BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundOperand.Type);
+            if (boundOperator == null)
+            {
+                _diagnostics.ReportUndefinedUnaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundOperand.Type);
+                return boundOperand;
+            }
+            return new BoundUnaryExpression(boundOperator, boundOperand);
+        }
+        private BoundExpression BindBinaryExpression(
+          BinaryExpressionSyntax syntax)
+        {
+            BoundExpression boundLeft = BindExpression(syntax.Left);
+            BoundExpression boundRight = BindExpression(syntax.Right);
+            BoundBinaryOperator boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
+            if (boundOperator == null)
+            {
+                _diagnostics.ReportUndefinedBinaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundLeft.Type, boundRight.Type);
+                return boundLeft;
+            }
+            return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+        }
+        private BoundExpression BindParenthesizedExpression(ParenthesizedExpressionSyntax syntax) => BindExpression(syntax.Expression);
     }
-
-    public DiagnosticBag Diagnostics => _diagnostics;
-
-    public BoundExpression BindExpression(ExpressionSyntax syntax)
-    {
-      switch (syntax.Kind)
-      {
-        case SyntaxKind.LiteralExpression:
-          return BindLiteralExpression((LiteralExpressionSyntax)syntax);
-        case SyntaxKind.ParenthesizedExpression:
-          return BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax);
-        case SyntaxKind.NameExpression:
-          return BindNameExpression((NameExpressionSyntax)syntax);
-        case SyntaxKind.AssigmentExpression:
-          return BindAssigmentxpression((AssigmentExpressionSyntax)syntax);
-        case SyntaxKind.UnaryExpression:
-          return BindUnaryExpression((UnaryExpressionSyntax)syntax);
-        case SyntaxKind.BinaryExpression:
-          return BindBinaryExpression((BinaryExpressionSyntax)syntax);
-        default:
-          throw new Exception($"Unaexpected syntax {syntax.Kind}");
-      }
-    }
-
-    private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
-      => new BoundLiteralExpression(syntax.Value ?? 0);
-
-    private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
-    {
-      var name = syntax.IdentifierToken.Text;
-      var variable = _variables.Keys.FirstOrDefault(v => v.Name == name);
-
-      if (variable == null)
-      {
-        _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
-        return new BoundLiteralExpression(0);
-      }
-      return new BoundVariableExpression(variable);
-    }
-
-    private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
-    {
-      var name = syntax.IdentifierToken.Text;
-      var boundExpression = BindExpression(syntax.Expression);
-
-      var existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
-      if (existingVariable != null)
-        _variables.Remove(existingVariable);
-      var variable = new VariableSymbol(name, boundExpression.Type);
-      _variables[variable] = null;
-
-      return new BoundAssigmentExpression(variable, boundExpression);
-    }
-
-    private BoundExpression BindUnaryExpression(
-      UnaryExpressionSyntax syntax)
-    {
-      var boundOperand = BindExpression(syntax.Operand);
-      var boundOperator = BoundUnaryOperator.Bind(
-        syntax.OperatorToken.Kind,
-        boundOperand.Type);
-      if (boundOperator == null)
-      {
-        _diagnostics.ReportUndefinedUnaryOperator(
-          syntax.OperatorToken.Span,
-          syntax.OperatorToken.Text,
-          boundOperand.Type);
-        return boundOperand;
-      }
-      return new BoundUnaryExpression(boundOperator, boundOperand);
-    }
-
-    private BoundExpression BindBinaryExpression(
-      BinaryExpressionSyntax syntax)
-    {
-      var boundLeft = BindExpression(syntax.Left);
-      var boundRight = BindExpression(syntax.Right);
-      var boundOperator = BoundBinaryOperator.Bind(
-        syntax.OperatorToken.Kind,
-        boundLeft.Type,
-        boundRight.Type);
-      if (boundOperator == null)
-      {
-        _diagnostics.ReportUndefinedBinaryOperator(
-          syntax.OperatorToken.Span,
-          syntax.OperatorToken.Text,
-          boundLeft.Type,
-          boundRight.Type);
-        return boundLeft;
-      }
-      return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
-    }
-
-    private BoundExpression BindParenthesizedExpression(ParenthesizedExpressionSyntax syntax)
-      => BindExpression(syntax.Expression);
-  }
 }

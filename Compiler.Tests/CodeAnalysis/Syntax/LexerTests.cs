@@ -1,66 +1,50 @@
 using System;
-using System.Linq;
-using Xunit;
-using Compiler.CodeAnalysis.Syntax;
 using System.Collections.Generic;
+using System.Linq;
 
+using Compiler.CodeAnalysis.Syntax;
+
+using Xunit;
 namespace Compiler.Tests.CodeAnalysis.Syntax
 {
     public class LexerTests
     {
         [Fact]
-        public void Lexer_Test_AllTokens()
+        public void Lexer_Test_AllTokens( )
         {
-            var tokensKinds  =  Enum.GetValues(typeof(SyntaxKind))
-                                    .Cast<SyntaxKind>()
-                                    .Where(k => k.ToString().EndsWith("Keyword") || 
-                                                k.ToString().EndsWith("Token"));
-
-            var testedTokensKinds = GetTokens().Select(t => t.kind);
-
-            var untestedTokensKinds = new SortedSet<SyntaxKind>(tokensKinds);
-            untestedTokensKinds.Remove(SyntaxKind.EndOfFileToken);
-            untestedTokensKinds.Remove(SyntaxKind.InvalidToken);
-            untestedTokensKinds.ExceptWith(testedTokensKinds);
-
+            SortedSet<SyntaxKind> untestedTokensKinds =
+                new SortedSet<SyntaxKind>(Enum.GetValues(typeof(SyntaxKind))
+                    .Cast<SyntaxKind>()
+                    .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token")));
+            _ = untestedTokensKinds.Remove(SyntaxKind.EndOfFileToken);
+            _ = untestedTokensKinds.Remove(SyntaxKind.InvalidToken);
+            untestedTokensKinds.ExceptWith(GetTokens().Select(t => t.kind));
             Assert.Empty(untestedTokensKinds);
         }
-
         [Theory]
         [MemberData(nameof(GetTokenData))]
         public void Lexer_Lexes_Token(SyntaxKind kind, string text)
         {
-            var tokens = SyntaxTree.ParseTokens(text);
-
-            var token = Assert.Single(tokens);
+            SyntaxToken token = Assert.Single(SyntaxTree.ParseTokens(text));
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
         }
-
         [Theory]
         [MemberData(nameof(GetTokenPairData))]
-        public void Lexer_Lexes_Token_Pairs(
-            SyntaxKind t1Kind, string t1Text,
-            SyntaxKind t2Kind, string t2Text)
+        public void Lexer_Lexes_Token_Pairs(SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text)
         {
-            var tokens = SyntaxTree.ParseTokens(t1Text + t2Text).ToArray();
-
+            SyntaxToken[] tokens = SyntaxTree.ParseTokens(t1Text + t2Text).ToArray();
             Assert.Equal(2, tokens.Length);
             Assert.Equal(tokens[0].Kind, t1Kind);
             Assert.Equal(tokens[0].Text, t1Text);
             Assert.Equal(tokens[1].Kind, t2Kind);
             Assert.Equal(tokens[1].Text, t2Text);
         }
-
         [Theory]
         [MemberData(nameof(GetTokenPairWithSeparatorData))]
-        public void Lexer_Lexes_Token_Pairs_With_Separator(
-            SyntaxKind t1Kind, string t1Text,
-            SyntaxKind spKind, string spText,
-            SyntaxKind t2Kind, string t2Text)
+        public void Lexer_Lexes_Token_Pairs_With_Separator(SyntaxKind t1Kind, string t1Text, SyntaxKind spKind, string spText, SyntaxKind t2Kind, string t2Text)
         {
-            var tokens = SyntaxTree.ParseTokens(t1Text + spText+ t2Text).ToArray();
-
+            SyntaxToken[] tokens = SyntaxTree.ParseTokens(t1Text + spText + t2Text).ToArray();
             Assert.Equal(3, tokens.Length);
             Assert.Equal(tokens[0].Kind, t1Kind);
             Assert.Equal(tokens[0].Text, t1Text);
@@ -69,135 +53,67 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             Assert.Equal(tokens[2].Kind, t2Kind);
             Assert.Equal(tokens[2].Text, t2Text);
         }
-
-        public static IEnumerable<object[]> GetTokenData()
+        public static IEnumerable<object[]> GetTokenData( )
+            => GetTokens().Select(t => new object[] { t.kind, t.text });
+        public static IEnumerable<object[]> GetTokenPairData( )
+            => GetTokenPairs().Select(t => new object[] { t.t1Kind, t.t1Text, t.t2Kind, t.t2Text });
+        public static IEnumerable<object[]> GetTokenPairWithSeparatorData( ) => GetTokenPairsWithSeparator().Select(t => new object[] {
+                                                                                                                   t.t1Kind, t.t1Text,
+                                                                                                                   t.spkind, t.spText,
+                                                                                                                   t.t2Kind, t.t2Text });
+        private static IEnumerable<(SyntaxKind kind, string text)> GetTokens( )
+            => Enum.GetValues(typeof(SyntaxKind))
+                   .Cast<SyntaxKind>()
+                   .Select(k => (kind: k, text: SyntaxFacts.GetText(k)))
+                   .Where(t => t.text != null)
+                   .Concat(new[] {
+                        (SyntaxKind.WhiteSpaceToken, " "),
+                        (SyntaxKind.WhiteSpaceToken, "  "),
+                        (SyntaxKind.WhiteSpaceToken, "\r"),
+                        (SyntaxKind.WhiteSpaceToken, "\n"),
+                        (SyntaxKind.WhiteSpaceToken, "\r\n"),
+                        (SyntaxKind.NumberToken, "1"),
+                        (SyntaxKind.NumberToken, "123456"),
+                        (SyntaxKind.IdentifierToken, "a"),
+                        (SyntaxKind.IdentifierToken, "abc"),
+                        (SyntaxKind.IdentifierToken, "testing"),
+                   });
+        private static IEnumerable<(SyntaxKind kind, string text)> GetSeparators( ) => new[]
         {
-            foreach (var t in GetTokens())
-                yield return new object[] { t.kind, t.text };
-        }
-
-        public static IEnumerable<object[]> GetTokenPairData()
+            (SyntaxKind.WhiteSpaceToken, " "),
+            (SyntaxKind.WhiteSpaceToken, "  "),
+            (SyntaxKind.WhiteSpaceToken, "\r"),
+            (SyntaxKind.WhiteSpaceToken, "\n"),
+            (SyntaxKind.WhiteSpaceToken, "\r\n"),
+        };
+        private static bool RequiresSeparator(SyntaxKind t1Kind, SyntaxKind t2Kind)
+            => ((t1Kind == SyntaxKind.IdentifierToken || t1Kind.ToString().EndsWith("Keyword")) &&
+               (t2Kind == SyntaxKind.IdentifierToken || t2Kind.ToString().EndsWith("Keyword"))) ||
+               ((t1Kind == SyntaxKind.ExclamationToken || t1Kind == SyntaxKind.AssigmentToken ||
+               t1Kind == SyntaxKind.LessThenToken || t1Kind == SyntaxKind.GreaterThenToken) &&
+               (t2Kind == SyntaxKind.AssigmentToken || t2Kind == SyntaxKind.DoubleEqualsToken)) ||
+               (t1Kind == SyntaxKind.NumberToken && t2Kind == SyntaxKind.NumberToken);
+        private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text)> GetTokenPairs( )
         {
-            foreach (var t in GetTokenPairs())
-                yield return new object[] { t.t1Kind, t.t1Text, t.t2Kind, t.t2Text };
-        }
-
-        public static IEnumerable<object[]> GetTokenPairWithSeparatorData()
-        {
-            foreach (var t in GetTokenPairsWithSeparator())
-                yield return new object[] { 
-                    t.t1Kind, t.t1Text, 
-                    t.spkind, t.spText, 
-                    t.t2Kind, t.t2Text };
-        }
-
-        private static IEnumerable<(SyntaxKind kind, string text)> GetTokens()
-        {
-            var fixedTokens = Enum.GetValues(typeof(SyntaxKind))
-                                            .Cast<SyntaxKind>()
-                                            .Select(k => (kind: k, text: SyntaxFacts.GetText(k)))
-                                            .Where(t => t.text != null);
-
-            var dynamicTokens = new[] {
-                //Space Tests
-                (SyntaxKind.WhiteSpaceToken, " "),
-                (SyntaxKind.WhiteSpaceToken, "  "),
-                (SyntaxKind.WhiteSpaceToken, "\r"),
-                (SyntaxKind.WhiteSpaceToken, "\n"),
-                (SyntaxKind.WhiteSpaceToken, "\r\n"),
-
-                //Number Tests
-                (SyntaxKind.NumberToken, "1"),
-                (SyntaxKind.NumberToken, "123456"),
-
-                //Identifier Tests
-                (SyntaxKind.IdentifierToken, "a"),
-                (SyntaxKind.IdentifierToken, "abc"),
-                (SyntaxKind.IdentifierToken, "testing"),
-            };
-
-            return fixedTokens.Concat(dynamicTokens);
-        }
-
-        private static IEnumerable<(SyntaxKind kind, string text)> GetSeparators()
-        {
-            return new[] {
-                (SyntaxKind.WhiteSpaceToken, " "),
-                (SyntaxKind.WhiteSpaceToken, "  "),
-                (SyntaxKind.WhiteSpaceToken, "\r"),
-                (SyntaxKind.WhiteSpaceToken, "\n"),
-                (SyntaxKind.WhiteSpaceToken, "\r\n"),
-            };
-        }
-
-        private static bool RequiresSeparator(SyntaxKind t1Kind, SyntaxKind t2Kind) 
-        =>  (
-                (
-                    (
-                        t1Kind == SyntaxKind.IdentifierToken 
-                            || 
-                        t1Kind.ToString().EndsWith("Keyword")
-                    ) 
-                        && 
-                    (
-                        t2Kind == SyntaxKind.IdentifierToken 
-                            || 
-                        t2Kind.ToString().EndsWith("Keyword")
-                    )
-                ) 
-                    ||
-                (
-                    (
-                        t1Kind == SyntaxKind.ExclamationToken 
-                            || 
-                        t1Kind == SyntaxKind.AssigmentToken 
-                            ||
-                        t1Kind == SyntaxKind.LessThenToken 
-                            || 
-                        t1Kind == SyntaxKind.GreaterThenToken
-                    ) 
-                    && 
-                    (
-                        t2Kind == SyntaxKind.AssigmentToken 
-                            || 
-                        t2Kind == SyntaxKind.DoubleEqualsToken
-                    )
-                ) 
-                    || 
-                (
-                    t1Kind == SyntaxKind.NumberToken 
-                        && 
-                    t2Kind == SyntaxKind.NumberToken
-                )
-            );
-
-        private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text)> GetTokenPairs()
-        {
-            foreach (var t1 in GetTokens())
-                foreach (var t2 in GetTokens())
+            foreach ((SyntaxKind kind1, string text1) in GetTokens())
+                foreach ((SyntaxKind kind2, string text2) in GetTokens())
                 {
-                    if (t1.kind == SyntaxKind.WhiteSpaceToken && 
-                        t2.kind == SyntaxKind.WhiteSpaceToken)
+                    if (kind1 == SyntaxKind.WhiteSpaceToken && kind2 == SyntaxKind.WhiteSpaceToken)
                         continue;
-                    if (!RequiresSeparator(t1.kind, t2.kind))
-                        yield return (t1.kind, t1.text, t2.kind, t2.text);
+                    if (!RequiresSeparator(kind1, kind2))
+                        yield return (kind1, text1, kind2, text2);
                 }
         }
-
-        private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind spkind, string spText, SyntaxKind t2Kind, string t2Text)> GetTokenPairsWithSeparator()
+        private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind spkind, string spText, SyntaxKind t2Kind, string t2Text)> GetTokenPairsWithSeparator( )
         {
-            foreach (var t1 in GetTokens())
-                foreach (var t2 in GetTokens())
+            foreach ((SyntaxKind kind1, string text1) in GetTokens())
+                foreach ((SyntaxKind kind2, string text2) in GetTokens())
                 {
-                    if (t1.kind == SyntaxKind.WhiteSpaceToken && 
-                        t2.kind == SyntaxKind.WhiteSpaceToken)
+                    if (kind1 == SyntaxKind.WhiteSpaceToken && kind2 == SyntaxKind.WhiteSpaceToken)
                         continue;
-                    if (RequiresSeparator(t1.kind, t2.kind))
-                        foreach (var s in GetSeparators())
-                            yield return ( 
-                                t1.kind, t1.text, 
-                                s.kind, s.text, 
-                                t2.kind, t2.text);
+                    if (RequiresSeparator(kind1, kind2))
+                        foreach ((SyntaxKind kind, string text) in GetSeparators())
+                            yield return (kind1, text1, kind, text, kind2, text2);
                 }
         }
     }

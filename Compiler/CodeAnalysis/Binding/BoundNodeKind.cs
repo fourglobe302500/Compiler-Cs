@@ -1,11 +1,17 @@
 namespace Compiler.CodeAnalysis.Binding
 {
-  internal enum BoundNodeKind
-  {
-    LiteralToken,
-    VariableExpression,
-    AssigmentExpression,
-    UnaryExpression,
-    BinaryExpression,
-  }
+    internal enum BoundNodeKind
+    {
+        //Statements
+        BlockStatement,
+        VariableDeclaration,
+        ExpressionStatement,
+
+        //Expressions
+        LiteralToken,
+        VariableExpression,
+        AssigmentExpression,
+        UnaryExpression,
+        BinaryExpression,
+    }
 }
