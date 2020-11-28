@@ -42,6 +42,8 @@ namespace Compiler.CodeAnalysis.Syntax
                 case '/': _kind = SyntaxKind.SlashToken; break;
                 case '(': _kind = SyntaxKind.OpenParenthesisToken; break;
                 case ')': _kind = SyntaxKind.CloseParenthesisToken; break;
+                case '{': _kind = SyntaxKind.OpenBraceToken; break;
+                case '}': _kind = SyntaxKind.CloseBraceToken; break;
                 case '%': _kind = SyntaxKind.PercentToken; break;
                 case '^': _kind = SyntaxKind.HatToken; break;
                 case '|':

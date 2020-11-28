@@ -53,6 +53,8 @@ namespace Compiler.CodeAnalysis.Syntax
         {
             SyntaxKind.CloseParenthesisToken => ")",
             SyntaxKind.OpenParenthesisToken => "(",
+            SyntaxKind.OpenBraceToken => "{",
+            SyntaxKind.CloseBraceToken => "}",
             SyntaxKind.PlusToken => "+",
             SyntaxKind.MinusToken => "-",
             SyntaxKind.StarToken => "*",

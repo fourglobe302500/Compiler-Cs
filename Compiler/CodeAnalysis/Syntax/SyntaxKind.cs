@@ -10,6 +10,8 @@ namespace Compiler.CodeAnalysis.Syntax
         NumberToken,
         CloseParenthesisToken,
         OpenParenthesisToken,
+        OpenBraceToken,
+        CloseBraceToken,
         ExclamationToken,
         AssigmentToken,
 
@@ -45,5 +47,9 @@ namespace Compiler.CodeAnalysis.Syntax
 
         //Node
         CompilationUnit,
+
+        //Statements
+        BlockStatement,
+        ExpressionStatement,
     }
 }

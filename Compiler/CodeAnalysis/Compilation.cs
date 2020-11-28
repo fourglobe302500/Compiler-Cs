@@ -11,7 +11,9 @@ namespace Compiler.CodeAnalysis
     public sealed class Compilation
     {
         private BoundGlobalScope _globalScope;
-        public Compilation ( SyntaxTree syntax ) : this(null, syntax) { }
+        public Compilation ( SyntaxTree syntax ) : this(null, syntax)
+        {
+        }
         private Compilation ( Compilation previous, SyntaxTree syntax )
         {
             Previous = previous;
@@ -41,8 +43,8 @@ namespace Compiler.CodeAnalysis
             if (diagnostics.Any())
                 return new EvaluationResult(diagnostics, null);
 
-            Evaluator evaluator = new Evaluator(GlobalScope.Expression, variables);
-            object value = evaluator.Evaluate;
+            Evaluator evaluator = new Evaluator(GlobalScope.Statement, variables);
+            object value = evaluator.Evaluate();
             return new EvaluationResult(ImmutableArray<Diagnostic>.Empty, value);
         }
     }

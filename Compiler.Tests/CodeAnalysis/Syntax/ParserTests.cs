@@ -16,7 +16,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             string op1Text = SyntaxFacts.GetText(op1);
             string op2Text = SyntaxFacts.GetText(op2);
             string text = $"a {op1Text} b {op2Text} c";
-            ExpressionSyntax expression = SyntaxTree.Parse(text).Root.Expression;
+            ExpressionSyntax expression = ParseExpression(text);
 
             if (op1Prec >= op2Prec)
                 //      op2
@@ -83,7 +83,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             string unaryText = SyntaxFacts.GetText(unaryKind);
             string binaryText = SyntaxFacts.GetText(binaryKind);
             string text = $"{unaryText} a {binaryText} b";
-            ExpressionSyntax expression = SyntaxTree.Parse(text).Root.Expression;
+            ExpressionSyntax expression = ParseExpression(text);
 
             if (unaryPrec >= binaryPrec)
                 //     binary
@@ -140,5 +140,6 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
         public static IEnumerable<object[]> GetUnaryOperatorPairsData() => from unary in SyntaxFacts.GetUnaryOperatorKinds()
                                                                            from binary in SyntaxFacts.GetBinaryOperatorKinds()
                                                                            select new object[] { unary, binary };
+        private static ExpressionSyntax ParseExpression ( string text ) => Assert.IsType<ExpressionStatementSyntax>(SyntaxTree.Parse(text).Root.Statement).Expression;
     }
 }
