@@ -17,6 +17,7 @@ namespace Compiler
             bool showTree = false;
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             StringBuilder textBuilder = new StringBuilder();
+            Compilation previous = null;
 
             while (true)
             {
@@ -46,6 +47,9 @@ namespace Compiler
                         case "#cls":
                             Console.Clear();
                             continue;
+                        case "#reset":
+                            previous = null;
+                            continue;
                     }
                 }
 
@@ -56,7 +60,9 @@ namespace Compiler
                 if (!isBlank && syntaxTree.Diagnostics.Any())
                     continue;
 
-                Compilation compilation = new Compilation(syntaxTree);
+                Compilation compilation = previous == null ?
+                                          new Compilation(syntaxTree) :
+                                          previous.ContinueWith(syntaxTree);
                 EvaluationResult result = compilation.Evaluate(variables);
                 ImmutableArray<Diagnostic> diagnostics = result.Diagnostics;
                 if (showTree)
@@ -70,6 +76,7 @@ namespace Compiler
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     Console.WriteLine(result.Value);
                     Console.ResetColor();
+                    previous = compilation;
                 }
                 else
                 {

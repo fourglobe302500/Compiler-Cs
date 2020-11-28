@@ -1,24 +1,52 @@
-using Compiler.CodeAnalysis.Syntax;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
+
+using Compiler.CodeAnalysis.Syntax;
 
 namespace Compiler.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
-        private readonly Dictionary<VariableSymbol, object> _variables;
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
-
-        public Binder(Dictionary<VariableSymbol, object> variables)
+        private readonly BoundScope _scope;
+        public Binder ( BoundScope parent ) => _scope = new BoundScope(parent);
+        public static BoundGlobalScope BindGlobalScope ( BoundGlobalScope previous, CompilationUnitSyntax syntax )
         {
-            _variables = variables;
-        }
+            var parentScope = CreateParentScopes(previous);
+            var binder = new Binder(parentScope);
+            var expression = binder.BindExpression(syntax.Expression);
+            var variables = binder._scope.Variables;
+            var diagnostics = binder.Diagnostics.ToImmutableArray();
 
+            if (previous != null)
+                diagnostics = diagnostics.InsertRange(0, previous.Diagnostics);
+
+            return new BoundGlobalScope(previous, diagnostics, variables, expression);
+        }   
+        private static BoundScope CreateParentScopes ( BoundGlobalScope previous )
+        {
+            var stack = new Stack<BoundGlobalScope>();
+            while (previous != null)
+            {
+                stack.Push(previous);
+                previous = previous.Previous;
+            }
+            BoundScope parent = null;
+
+            while (stack.Count > 0)
+            {
+                previous = stack.Pop();
+                var scope = new BoundScope(parent);
+                previous.Variables.ToImmutableList().ForEach(v => scope.TryDeclare(v));
+                parent = scope;
+            }
+
+            return parent;
+        } 
         public DiagnosticBag Diagnostics => _diagnostics;
-
-        public BoundExpression BindExpression(ExpressionSyntax syntax) => syntax.Kind switch
-        {
+        public BoundExpression BindExpression ( ExpressionSyntax syntax ) => syntax.Kind switch {
             SyntaxKind.LiteralExpression => BindLiteralExpression((LiteralExpressionSyntax)syntax),
             SyntaxKind.ParenthesizedExpression => BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax),
             SyntaxKind.NameExpression => BindNameExpression((NameExpressionSyntax)syntax),
@@ -28,15 +56,14 @@ namespace Compiler.CodeAnalysis.Binding
             _ => throw new Exception($"Unaexpected syntax {syntax.Kind}"),
         };
 
-        private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
+        private BoundExpression BindLiteralExpression ( LiteralExpressionSyntax syntax )
           => new BoundLiteralExpression(syntax.Value ?? 0);
 
-        private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
+        private BoundExpression BindNameExpression ( NameExpressionSyntax syntax )
         {
             string name = syntax.IdentifierToken.Text;
-            VariableSymbol variable = _variables.Keys.FirstOrDefault(v => v.Name == name);
 
-            if (variable == null)
+            if (!_scope.TryLookup(name, out var variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, name);
                 return new BoundLiteralExpression(0);
@@ -44,22 +71,28 @@ namespace Compiler.CodeAnalysis.Binding
             return new BoundVariableExpression(variable);
         }
 
-        private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
+        private BoundExpression BindAssigmentxpression ( AssigmentExpressionSyntax syntax )
         {
             string name = syntax.IdentifierToken.Text;
             BoundExpression boundExpression = BindExpression(syntax.Expression);
 
-            VariableSymbol existingVariable = _variables.Keys.FirstOrDefault(v => v.Name == name);
-            if (existingVariable != null)
-                _variables.Remove(existingVariable);
-            VariableSymbol variable = new VariableSymbol(name, boundExpression.Type);
-            _variables[variable] = null;
+            if (_scope.TryLookup(name, out var variable))
+            {
+                variable = new VariableSymbol(name, boundExpression.Type);
+                _scope.TryDeclare(variable);
+            }
+            
+            if (boundExpression.Type != variable.Type)
+            {
+                _diagnostics.ReportCannotConvert(syntax.Expression.Span, boundExpression.Type, variable.Type);
+                return boundExpression;
+            }
 
             return new BoundAssigmentExpression(variable, boundExpression);
         }
 
-        private BoundExpression BindUnaryExpression(
-          UnaryExpressionSyntax syntax)
+        private BoundExpression BindUnaryExpression (
+          UnaryExpressionSyntax syntax )
         {
             BoundExpression boundOperand = BindExpression(syntax.Operand);
             BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(
@@ -76,8 +109,8 @@ namespace Compiler.CodeAnalysis.Binding
             return new BoundUnaryExpression(boundOperator, boundOperand);
         }
 
-        private BoundExpression BindBinaryExpression(
-          BinaryExpressionSyntax syntax)
+        private BoundExpression BindBinaryExpression (
+          BinaryExpressionSyntax syntax )
         {
             BoundExpression boundLeft = BindExpression(syntax.Left);
             BoundExpression boundRight = BindExpression(syntax.Right);
@@ -97,6 +130,6 @@ namespace Compiler.CodeAnalysis.Binding
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
         }
 
-        private BoundExpression BindParenthesizedExpression(ParenthesizedExpressionSyntax syntax) => BindExpression(syntax.Expression);
+        private BoundExpression BindParenthesizedExpression ( ParenthesizedExpressionSyntax syntax ) => BindExpression(syntax.Expression);
     }
 }
