@@ -11,7 +11,7 @@ namespace Compiler.CodeAnalysis
         private readonly Dictionary<VariableSymbol, object> _variables;
         private readonly BoundStatement _root;
         private object _lastValue;
-        public Evaluator ( BoundStatement root, Dictionary<VariableSymbol, object> variables )
+        public Evaluator(BoundStatement root, Dictionary<VariableSymbol, object> variables)
         {
             _root = root;
             _variables = variables;
@@ -30,6 +30,9 @@ namespace Compiler.CodeAnalysis
                 case BoundNodeKind.BlockStatement:
                     EvaluateBlockStatement((BoundBlockStatement)statement);
                     break;
+                case BoundNodeKind.VariableDeclaration:
+                    EvaluateVariableDeclaration((BoundVariableDeclaration)statement);
+                    break;
                 case BoundNodeKind.ExpressionStatement:
                     EvaluateExpressionStatement((BoundExpressionStatement)statement);
                     break;
@@ -42,7 +45,13 @@ namespace Compiler.CodeAnalysis
         {
             statement.Statements.ToImmutableList().ForEach(s => EvaluateStatement(s));
         }
-        private void EvaluateExpressionStatement ( BoundExpressionStatement statement )
+        private void EvaluateVariableDeclaration(BoundVariableDeclaration statement)
+        {
+            var value = EvaluateExpression(statement.Initializer);
+            _variables[statement.Variable] = value;
+            _lastValue = value;
+        }
+        private void EvaluateExpressionStatement(BoundExpressionStatement statement)
         {
             _lastValue = EvaluateExpression(statement.Expression);
         }

@@ -40,9 +40,7 @@ namespace Compiler.Tests.CodeAnalysis
         [InlineData("!false", true)]
         [InlineData("true && false", false)]
         [InlineData("false || false", false)]
-        [InlineData("(a = 10) * 2", 20)]
-        [InlineData("(a = 20) * a", 400)]
-        [InlineData("(a = 5) * (b = 20) - (b / a)", 96)]
+        [InlineData("{ var a = 0 (a = 10) * 2}", 20)]
         public void Evalutor_Works(string text, object value)
         {
             EvaluationResult result = new Compilation(SyntaxTree.Parse(text)).Evaluate(new Dictionary<VariableSymbol, object>());

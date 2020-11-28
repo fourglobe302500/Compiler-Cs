@@ -4,6 +4,7 @@ namespace Compiler.CodeAnalysis.Binding
     {
         //Statements
         BlockStatement,
+        VariableDeclaration,
         ExpressionStatement,
 
         //Expressions

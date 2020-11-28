@@ -35,22 +35,18 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.LogicalOrToken => 1,
             _ => 0,
         };
-
-        public static SyntaxKind GetKeywordKind(string text) => text switch
-        {
+        public static SyntaxKind GetKeywordKind ( string text ) => text switch {
             "true" => SyntaxKind.TrueKeyword,
             "false" => SyntaxKind.FalseKeyword,
+            "var" => SyntaxKind.VarKeyword,
+            "def" => SyntaxKind.DefKeyword,
             _ => SyntaxKind.IdentifierToken,
         };
-
-        public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds()
-            => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Where(kind => GetUnaryOperatorPrecedence(kind) > 0);
-
-        public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds()
-            => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Where(kind => GetBinaryOperatorPrecedence(kind) > 0);
-
-        public static string GetText(SyntaxKind kind) => kind switch
-        {
+        public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds ( )
+            => ( (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind)) ).Where(kind => GetUnaryOperatorPrecedence(kind) > 0);
+        public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds ( )
+            => ( (SyntaxKind[])Enum.GetValues(typeof(SyntaxKind)) ).Where(kind => GetBinaryOperatorPrecedence(kind) > 0);
+        public static string GetText ( SyntaxKind kind ) => kind switch {
             SyntaxKind.CloseParenthesisToken => ")",
             SyntaxKind.OpenParenthesisToken => "(",
             SyntaxKind.OpenBraceToken => "{",
@@ -63,6 +59,8 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.HatToken => "^",
             SyntaxKind.TrueKeyword => "true",
             SyntaxKind.FalseKeyword => "false",
+            SyntaxKind.VarKeyword => "var",
+            SyntaxKind.DefKeyword => "def",
             SyntaxKind.AssigmentToken => "=",
             SyntaxKind.DoubleEqualsToken => "==",
             SyntaxKind.NotEqualsToken => "!=",
