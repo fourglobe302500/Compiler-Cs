@@ -6,10 +6,10 @@ namespace Compiler.CodeAnalysis
         public Diagnostic(TextSpan spam, string massage)
         {
             Span = spam;
-            Massage = massage;
+            Message = massage;
         }
         public TextSpan Span { get; }
-        public string Massage { get; }
-        public override string ToString( ) => Massage;
+        public string Message { get; }
+        public override string ToString( ) => Message;
     }
 }
