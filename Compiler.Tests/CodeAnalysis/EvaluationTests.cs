@@ -86,6 +86,17 @@ namespace Compiler.Tests.CodeAnalysis
             AssertDiagnostics(text, diagnostics);
         }
         [Fact]
+        public void Evaluator_Name_Reports_NoErrorForInsertedToken( )
+        {
+            var text = @"[]";
+
+            var diagnostics = @"
+                Unexpected token <EndOfFileToken>, expected <IdentifierToken>.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        [Fact]
         public void Evaluator_Assigned_Reports_Undefined( )
         {
             var text = @"[x] = 10";

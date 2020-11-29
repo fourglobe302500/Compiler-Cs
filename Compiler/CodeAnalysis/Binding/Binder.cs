@@ -111,7 +111,10 @@ namespace Compiler.CodeAnalysis.Binding
           => new BoundLiteralExpression(syntax.Value ?? 0);
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
-            if (!_scope.TryLookup(syntax.IdentifierToken.Text, out VariableSymbol variable))
+            string name = syntax.IdentifierToken.Text;
+            if (string.IsNullOrEmpty(name))
+                return new BoundLiteralExpression(0);
+            if (!_scope.TryLookup(name, out VariableSymbol variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, syntax.IdentifierToken.Text);
                 return new BoundLiteralExpression(0);
