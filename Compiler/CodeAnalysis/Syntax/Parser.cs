@@ -55,6 +55,7 @@ namespace Compiler.CodeAnalysis.Syntax
         private StatementSyntax ParseStatement( ) => Current.Kind switch {
             SyntaxKind.OpenBraceToken => ParseBlockStatement(),
             var kind when new[] { SyntaxKind.VarKeyword, SyntaxKind.DefKeyword }.Contains(kind) => ParseVariableDeclaration(),
+            SyntaxKind.IfKeyword => ParseIfStatement(),
             _ => ParseExpressionStatement()
         };
         private BlockStatementSyntax ParseBlockStatement( )
@@ -74,6 +75,23 @@ namespace Compiler.CodeAnalysis.Syntax
                                              MatchToken(SyntaxKind.IdentifierToken),
                                              MatchToken(SyntaxKind.AssigmentToken),
                                              ParseExpression());
+        private IfStatementSyntax ParseIfStatement( )
+        {
+            var ifKeyword = MatchToken(SyntaxKind.IfKeyword);
+            var condition = ParseExpression();
+            var thenStatement = ParseStatement();
+            var elseClause = ParseElseClause();
+            return new IfStatementSyntax(ifKeyword, condition, thenStatement, elseClause);
+        }
+#nullable enable
+        private ElseClauseSyntax? ParseElseClause( )
+        {
+            if (Current.Kind != SyntaxKind.ElseKeyword)
+                return null;
+            var keyword = NextToken();
+            var code = ParseStatement();
+            return new ElseClauseSyntax(keyword, code);
+        }
         private ExpressionSyntax ParseExpression( ) => ParseAssigmentExpression();
         private ExpressionSyntax ParseAssigmentExpression( ) =>
             Current.Kind == SyntaxKind.IdentifierToken && LookAhead.Kind == SyntaxKind.AssigmentToken ?

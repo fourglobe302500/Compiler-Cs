@@ -36,6 +36,8 @@ namespace Compiler.CodeAnalysis.Syntax
         FalseKeyword,
         VarKeyword,
         DefKeyword,
+        ElseKeyword,
+        IfKeyword,
 
         //Logical Operators
         LogicalOrToken,
@@ -49,10 +51,12 @@ namespace Compiler.CodeAnalysis.Syntax
 
         //Node
         CompilationUnit,
+        ElseClause,
 
         //Statements
         BlockStatement,
         VariableDeclaration,
         ExpressionStatement,
+        IfStatement,
     }
 }

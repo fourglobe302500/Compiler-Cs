@@ -6,6 +6,7 @@ namespace Compiler.CodeAnalysis.Binding
         BlockStatement,
         VariableDeclaration,
         ExpressionStatement,
+        IfStatement,
 
         //Expressions
         LiteralToken,
