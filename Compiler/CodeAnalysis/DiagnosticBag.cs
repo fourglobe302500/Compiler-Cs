@@ -22,9 +22,9 @@ namespace Compiler.CodeAnalysis
         public void ReportUnexpectedToken(TextSpan span, SyntaxKind actualKind, SyntaxKind expectedKind)
           => Report(span, $"Unexpected token <{actualKind}>, expected <{expectedKind}>.");
         public void ReportUndefinedUnaryOperator(TextSpan span, string text, Type type)
-          => Report(span, $"Unary operator '{text}' is not defined for type {type}.");
+          => Report(span, $"Unary operator '{text}' is not defined for type '{type}'.");
         public void ReportUndefinedBinaryOperator(TextSpan span, string text, Type leftType, Type rightType)
-          => Report(span, $"Binary operator '{text}' is not defined for types {leftType} and {rightType}.");
+          => Report(span, $"Binary operator '{text}' is not defined for types '{leftType}' and '{rightType}'.");
         public void ReportUndefinedName(TextSpan span, string name)
             => Report(span, $"Variable '{name}' doesn't exist.");
         public void ReportCannotConvert(TextSpan span, Type fromType, Type toType)
