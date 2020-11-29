@@ -174,6 +174,22 @@ namespace Compiler.Tests.CodeAnalysis
             AssertDiagnostics(text, diagnostics);
         }
         [Fact]
+        public void Evaluator_forStatement_Reports_Conversion( )
+        {
+            var text = @"
+                {
+                    for var x = 0 [10] x = x + 1
+                        x = 10
+                }
+            ";
+
+            var diagnostics = @"
+                Cannot convert type 'System.Int32' to 'System.Boolean'.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        [Fact]
         public void Evaluator_Bynary_Reports_( )
         {
             var text = @"10 [+] false";
