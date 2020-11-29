@@ -64,10 +64,14 @@ namespace Compiler.CodeAnalysis.Syntax
         {
             ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
             SyntaxToken openBraceToken = MatchToken(SyntaxKind.OpenBraceToken);
+            var startToken = Current;
             while (Current.Kind != SyntaxKind.EndOfFileToken && Current.Kind != SyntaxKind.CloseBraceToken)
             {
                 StatementSyntax statement = ParseStatement();
                 statements.Add(statement);
+                if (Current == startToken)
+                    NextToken();
+                startToken = Current;
             }
             return new BlockStatementSyntax(openBraceToken, statements.ToImmutable(), MatchToken(SyntaxKind.CloseBraceToken));
         }

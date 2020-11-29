@@ -211,6 +211,18 @@ namespace Compiler.Tests.CodeAnalysis
 
             AssertDiagnostics(text, diagnostics);
         }
+        [Fact]
+        public void Evaluator_Dont_Causes_InfinitLoop( )
+        {
+            var text = @"{[)][]";
+
+            var diagnostics = @"
+                Unexpected token <CloseParenthesisToken>, expected <IdentifierToken>.
+                Unexpected token <EndOfFileToken>, expected <CloseBraceToken>.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
         private void AssertDiagnostics(string text, string diagnosticText)
         {
             var annotatedText = AnnotatedText.Parse(text);
