@@ -61,5 +61,6 @@ namespace Compiler.CodeAnalysis.Syntax
         ExpressionStatement,
         IfStatement,
         WhileStatement,
+        ForStatement,
     }
 }

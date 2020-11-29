@@ -56,8 +56,8 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.OpenBraceToken => ParseBlockStatement(),
             var kind when new[] { SyntaxKind.VarKeyword, SyntaxKind.DefKeyword }.Contains(kind) => ParseVariableDeclaration(),
             SyntaxKind.IfKeyword => ParseIfStatement(),
-            //SyntaxKind.ForKeyword => ParseForStatement(),
             SyntaxKind.WhileKeyword => ParseWhileStatement(),
+            SyntaxKind.ForKeyword => ParseForStatement(),
             _ => ParseExpressionStatement()
         };
         private BlockStatementSyntax ParseBlockStatement( )
@@ -85,13 +85,22 @@ namespace Compiler.CodeAnalysis.Syntax
             var elseClause = ParseElseClause();
             return new IfStatementSyntax(ifKeyword, condition, thenStatement, elseClause);
         }
-        //private ForStatementSyntax ParseForStatement
         private WhileStatementSyntax ParseWhileStatement( )
         {
             var whileKeyword = MatchToken(SyntaxKind.WhileKeyword);
             var condition = ParseExpression();
             var whileStatement = ParseStatement();
             return new WhileStatementSyntax(whileKeyword, condition, whileStatement);
+        }
+        private ForStatementSyntax ParseForStatement( )
+        {
+            var forKeyword = MatchToken(SyntaxKind.ForKeyword);
+            var declarationStatement = ParseStatement
+                ();
+            var condition = ParseExpression();
+            var incrementExpression = ParseExpression();
+            var forStatement = ParseStatement();
+            return new ForStatementSyntax(forKeyword, declarationStatement, condition, incrementExpression, forStatement);
         }
 #nullable enable
         private ElseClauseSyntax? ParseElseClause( )

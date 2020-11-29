@@ -46,8 +46,8 @@ namespace Compiler.CodeAnalysis.Binding
             SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclarationSyntax)syntax),
             SyntaxKind.IfStatement => BindIfStatement((IfStatementSyntax)syntax),
             SyntaxKind.WhileStatement => BindWhileStatement((WhileStatementSyntax)syntax),
-            //SyntaxKind.ForStatement => BindForStatement((ForStatementSyntax)syntax),
             SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
+            SyntaxKind.ForStatement => BindForStatement((ForStatementSyntax)syntax),
             _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
         };
         private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
@@ -78,6 +78,16 @@ namespace Compiler.CodeAnalysis.Binding
             var condition = BindExpression(syntax.Condition, typeof(bool));
             var whileStatement = BindStatement(syntax.WhileStatement);
             return new BoundWhileStatement(condition, whileStatement);
+        }
+        private BoundForStatement BindForStatement(ForStatementSyntax syntax)
+        {
+            _scope = new BoundScope(_scope);
+            var declarationStatement = BindStatement(syntax.DeclaritionStatement);
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var incrementExpression = BindExpression(syntax.IncrementExpression);
+            var forStatement = BindStatement(syntax.ForStatement);
+            _scope = _scope.Parent;
+            return new BoundForStatement(declarationStatement, condition, incrementExpression, forStatement);
         }
         private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
             => new BoundExpressionStatement(BindExpression(syntax.Expression));
