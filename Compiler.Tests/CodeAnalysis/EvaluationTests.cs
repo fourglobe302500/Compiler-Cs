@@ -46,6 +46,7 @@ namespace Compiler.Tests.CodeAnalysis
         [InlineData("{ var a = 0 if a == 0 a = 10 a}", 10)]
         [InlineData("{ var a = 20 if (a == 0) a = 10 else a = 9}", 9)]
         [InlineData("{ var a = 50 if (a == 50) {a = a - 10 if (a == 20) a = a * 2 else a = a / 2}}", 20)]
+        [InlineData("{var x = 0 while (x < 10) x = x + 1 x }", 10)]
         public void Evalutor_Works(string text, object value)
         {
             EvaluationResult result = new Compilation(SyntaxTree.Parse(text)).Evaluate(new Dictionary<VariableSymbol, object>());

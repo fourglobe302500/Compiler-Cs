@@ -33,6 +33,9 @@ namespace Compiler.CodeAnalysis
                 case BoundNodeKind.IfStatement:
                     EvaluateIfStatement((BoundIfStatement)statement);
                     break;
+                case BoundNodeKind.WhileStatement:
+                    EvaluateWhileStatement((BoundWhileStatement)statement);
+                    break;
                 case BoundNodeKind.ExpressionStatement:
                     EvaluateExpressionStatement((BoundExpressionStatement)statement);
                     break;
@@ -50,6 +53,11 @@ namespace Compiler.CodeAnalysis
                 EvaluateStatement(statement.ThenStatement);
             else if (statement.ElseStatement != null)
                 EvaluateStatement(statement.ElseStatement);
+        }
+        private void EvaluateWhileStatement(BoundWhileStatement statement)
+        {
+            while ((bool)EvaluateExpression(statement.Condition))
+                EvaluateStatement(statement.WhileStatement);
         }
         private void EvaluateExpressionStatement(BoundExpressionStatement statement) => _lastValue = EvaluateExpression(statement.Expression);
         private object EvaluateExpression(BoundExpression node) => node switch {

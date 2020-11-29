@@ -7,6 +7,7 @@ namespace Compiler.CodeAnalysis.Binding
         VariableDeclaration,
         ExpressionStatement,
         IfStatement,
+        WhileStatement,
 
         //Expressions
         LiteralToken,

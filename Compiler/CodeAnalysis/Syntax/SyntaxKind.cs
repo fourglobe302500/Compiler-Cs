@@ -38,6 +38,8 @@ namespace Compiler.CodeAnalysis.Syntax
         DefKeyword,
         ElseKeyword,
         IfKeyword,
+        ForKeyword,
+        WhileKeyword,
 
         //Logical Operators
         LogicalOrToken,
@@ -58,5 +60,6 @@ namespace Compiler.CodeAnalysis.Syntax
         VariableDeclaration,
         ExpressionStatement,
         IfStatement,
+        WhileStatement,
     }
 }
