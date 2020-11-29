@@ -17,11 +17,16 @@ namespace Compiler.CodeAnalysis.Syntax
             foreach (PropertyInfo property in properties)
             {
                 if (typeof(SyntaxNode).IsAssignableFrom(property.PropertyType))
-                    yield return (SyntaxNode)property.GetValue(this);
+                {
+                    SyntaxNode child = (SyntaxNode)property.GetValue(this);
+                    if (child != null)
+                        yield return child;
+                }
                 else if (typeof(IEnumerable<SyntaxNode>).IsAssignableFrom(property.PropertyType))
                 {
                     foreach (SyntaxNode child in (IEnumerable<SyntaxNode>)property.GetValue(this))
-                        yield return child;
+                        if (child != null)
+                            yield return child;
                 }
             }
         }
