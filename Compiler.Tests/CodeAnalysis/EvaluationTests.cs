@@ -140,6 +140,40 @@ namespace Compiler.Tests.CodeAnalysis
             AssertDiagnostics(text, diagnostics);
         }
         [Fact]
+        public void Evaluator_ifStatement_Reports_Conversion( )
+        {
+            var text = @"
+                {
+                    var x = 0
+                    if [10]
+                        x = 10
+                }
+            ";
+
+            var diagnostics = @"
+                Cannot convert type 'System.Int32' to 'System.Boolean'.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        [Fact]
+        public void Evaluator_WhileStatement_Reports_Conversion( )
+        {
+            var text = @"
+                {
+                    var x = 0
+                    while [10]
+                        x = 10
+                }
+            ";
+
+            var diagnostics = @"
+                Cannot convert type 'System.Int32' to 'System.Boolean'.
+            ";
+
+            AssertDiagnostics(text, diagnostics);
+        }
+        [Fact]
         public void Evaluator_Bynary_Reports_( )
         {
             var text = @"10 [+] false";
