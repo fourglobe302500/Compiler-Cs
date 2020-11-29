@@ -44,7 +44,10 @@ namespace Compiler.CodeAnalysis.Binding
         private BoundStatement BindStatement(StatementSyntax syntax) => syntax.Kind switch {
             SyntaxKind.BlockStatement => BindBlockStatement((BlockStatementSyntax)syntax),
             SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclarationSyntax)syntax),
+            SyntaxKind.IfStatement => BindIfStatement((IfStatementSyntax)syntax),
+            SyntaxKind.WhileStatement => BindWhileStatement((WhileStatementSyntax)syntax),
             SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
+            SyntaxKind.ForStatement => BindForStatement((ForStatementSyntax)syntax),
             _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
         };
         private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
@@ -63,8 +66,38 @@ namespace Compiler.CodeAnalysis.Binding
                 _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, syntax.Identifier.Text);
             return new BoundVariableDeclaration(variable, initializer);
         }
+        private BoundIfStatement BindIfStatement(IfStatementSyntax syntax)
+        {
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var thenStatement = BindStatement(syntax.ThenStatement);
+            var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.Code);
+            return new BoundIfStatement(condition, thenStatement, elseStatement);
+        }
+        private BoundWhileStatement BindWhileStatement(WhileStatementSyntax syntax)
+        {
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var whileStatement = BindStatement(syntax.WhileStatement);
+            return new BoundWhileStatement(condition, whileStatement);
+        }
+        private BoundForStatement BindForStatement(ForStatementSyntax syntax)
+        {
+            _scope = new BoundScope(_scope);
+            var declarationStatement = BindStatement(syntax.DeclaritionStatement);
+            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var incrementExpression = BindExpression(syntax.IncrementExpression);
+            var forStatement = BindStatement(syntax.ForStatement);
+            _scope = _scope.Parent;
+            return new BoundForStatement(declarationStatement, condition, incrementExpression, forStatement);
+        }
         private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
             => new BoundExpressionStatement(BindExpression(syntax.Expression));
+        private BoundExpression BindExpression(ExpressionSyntax syntax, Type returnType)
+        {
+            var result = BindExpression(syntax);
+            if (result.Type != returnType)
+                _diagnostics.ReportCannotConvert(syntax.Span, result.Type, returnType);
+            return result;
+        }
         private BoundExpression BindExpression(ExpressionSyntax syntax) => syntax.Kind switch {
             SyntaxKind.LiteralExpression => BindLiteralExpression((LiteralExpressionSyntax)syntax),
             SyntaxKind.ParenthesizedExpression => BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax),
@@ -78,7 +111,10 @@ namespace Compiler.CodeAnalysis.Binding
           => new BoundLiteralExpression(syntax.Value ?? 0);
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
-            if (!_scope.TryLookup(syntax.IdentifierToken.Text, out VariableSymbol variable))
+            string name = syntax.IdentifierToken.Text;
+            if (string.IsNullOrEmpty(name))
+                return new BoundLiteralExpression(0);
+            if (!_scope.TryLookup(name, out VariableSymbol variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, syntax.IdentifierToken.Text);
                 return new BoundLiteralExpression(0);

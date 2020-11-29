@@ -30,6 +30,15 @@ namespace Compiler.CodeAnalysis
                 case BoundNodeKind.VariableDeclaration:
                     EvaluateVariableDeclaration((BoundVariableDeclaration)statement);
                     break;
+                case BoundNodeKind.IfStatement:
+                    EvaluateIfStatement((BoundIfStatement)statement);
+                    break;
+                case BoundNodeKind.WhileStatement:
+                    EvaluateWhileStatement((BoundWhileStatement)statement);
+                    break;
+                case BoundNodeKind.ForStatement:
+                    EvaluateForStatement((BoundForStatement)statement);
+                    break;
                 case BoundNodeKind.ExpressionStatement:
                     EvaluateExpressionStatement((BoundExpressionStatement)statement);
                     break;
@@ -40,6 +49,28 @@ namespace Compiler.CodeAnalysis
         private void EvaluateBlockStatement(BoundBlockStatement statement) => statement.Statements.ToImmutableList().ForEach(s => EvaluateStatement(s));
         private void EvaluateVariableDeclaration(BoundVariableDeclaration statement)
             => _lastValue = _variables[statement.Variable] = EvaluateExpression(statement.Initializer);
+        private void EvaluateIfStatement(BoundIfStatement statement)
+        {
+            var condition = (bool)EvaluateExpression(statement.Condition);
+            if (condition)
+                EvaluateStatement(statement.ThenStatement);
+            else if (statement.ElseStatement != null)
+                EvaluateStatement(statement.ElseStatement);
+        }
+        private void EvaluateWhileStatement(BoundWhileStatement statement)
+        {
+            while ((bool)EvaluateExpression(statement.Condition))
+                EvaluateStatement(statement.WhileStatement);
+        }
+        private void EvaluateForStatement(BoundForStatement statement)
+        {
+            EvaluateStatement(statement.DeclarationStatement);
+            while ((bool)EvaluateExpression(statement.Condition))
+            {
+                EvaluateStatement(statement.ForStatement);
+                EvaluateExpression(statement.Increment);
+            }
+        }
         private void EvaluateExpressionStatement(BoundExpressionStatement statement) => _lastValue = EvaluateExpression(statement.Expression);
         private object EvaluateExpression(BoundExpression node) => node switch {
             BoundLiteralExpression l => EvaluateLiteralExpression(l),
