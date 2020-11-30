@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using System.Threading;
 
@@ -36,5 +38,9 @@ namespace Compiler.CodeAnalysis
             => Syntax.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray().Any()
                 ? new EvaluationResult(Syntax.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray(), null)
                 : new EvaluationResult(ImmutableArray<Diagnostic>.Empty, new Evaluator(GlobalScope.Statement, variables).Evaluate());
+        public void EmitTree(TextWriter writer)
+        {
+            GlobalScope.Statement.WriteTo(writer);
+        }
     }
 }
