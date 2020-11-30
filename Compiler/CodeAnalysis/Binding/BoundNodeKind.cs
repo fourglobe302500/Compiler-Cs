@@ -11,7 +11,7 @@ namespace Compiler.CodeAnalysis.Binding
         ForStatement,
 
         //Expressions
-        LiteralToken,
+        LiteralExpression,
         VariableExpression,
         AssigmentExpression,
         UnaryExpression,
