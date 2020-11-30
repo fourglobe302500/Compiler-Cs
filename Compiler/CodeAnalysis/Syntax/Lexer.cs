@@ -34,6 +34,7 @@ namespace Compiler.CodeAnalysis.Syntax
                 case '}': _kind = SyntaxKind.CloseBraceToken; break;
                 case '%': _kind = SyntaxKind.PercentToken; break;
                 case '^': _kind = SyntaxKind.HatToken; break;
+                case ';': _kind = SyntaxKind.SemiColonToken; break;
                 case '|':
                     if (Lookahead == '|')
                     { _kind = SyntaxKind.LogicalOrToken; _ = Walk(1); }

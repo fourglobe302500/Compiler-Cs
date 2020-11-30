@@ -54,6 +54,7 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.SlashToken => "/",
             SyntaxKind.PercentToken => "%",
             SyntaxKind.HatToken => "^",
+            SyntaxKind.SemiColonToken => ";",
             SyntaxKind.TrueKeyword => "true",
             SyntaxKind.FalseKeyword => "false",
             SyntaxKind.VarKeyword => "var",
