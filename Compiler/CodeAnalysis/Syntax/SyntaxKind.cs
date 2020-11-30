@@ -14,6 +14,7 @@ namespace Compiler.CodeAnalysis.Syntax
         CloseBraceToken,
         ExclamationToken,
         AssigmentToken,
+        SemiColonToken,
 
         //Operators
         PlusToken,

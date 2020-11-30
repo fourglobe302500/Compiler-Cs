@@ -46,8 +46,8 @@ namespace Compiler.CodeAnalysis.Binding
             SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclarationSyntax)syntax),
             SyntaxKind.IfStatement => BindIfStatement((IfStatementSyntax)syntax),
             SyntaxKind.WhileStatement => BindWhileStatement((WhileStatementSyntax)syntax),
-            SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
             SyntaxKind.ForStatement => BindForStatement((ForStatementSyntax)syntax),
+            SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
             _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
         };
         private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)

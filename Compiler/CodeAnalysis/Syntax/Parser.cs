@@ -75,12 +75,12 @@ namespace Compiler.CodeAnalysis.Syntax
             }
             return new BlockStatementSyntax(openBraceToken, statements.ToImmutable(), MatchToken(SyntaxKind.CloseBraceToken));
         }
-        private ExpressionStatementSyntax ParseExpressionStatement( ) => new ExpressionStatementSyntax(ParseExpression());
+        private ExpressionStatementSyntax ParseExpressionStatement( ) => new ExpressionStatementSyntax(ParseExpression(), MatchToken(SyntaxKind.SemiColonToken));
         private VariableDeclarationSyntax ParseVariableDeclaration( )
             => new VariableDeclarationSyntax(MatchToken(Current.Kind == SyntaxKind.VarKeyword ? SyntaxKind.VarKeyword : SyntaxKind.DefKeyword),
                                              MatchToken(SyntaxKind.IdentifierToken),
                                              MatchToken(SyntaxKind.AssigmentToken),
-                                             ParseExpression());
+                                             ParseExpression(), MatchToken(SyntaxKind.SemiColonToken));
         private IfStatementSyntax ParseIfStatement( )
         {
             var ifKeyword = MatchToken(SyntaxKind.IfKeyword);
@@ -99,15 +99,17 @@ namespace Compiler.CodeAnalysis.Syntax
         private ForStatementSyntax ParseForStatement( )
         {
             var forKeyword = MatchToken(SyntaxKind.ForKeyword);
-            var declarationStatement = ParseStatement
-                ();
+            var openParenthesisToken = MatchToken(SyntaxKind.OpenParenthesisToken);
+            var declarationStatement = ParseStatement();
             var condition = ParseExpression();
+            var middleSemiColonToken = MatchToken(SyntaxKind.SemiColonToken);
             var incrementExpression = ParseExpression();
+            var closeParenthesisToken = MatchToken(SyntaxKind.CloseParenthesisToken);
             var forStatement = ParseStatement();
-            return new ForStatementSyntax(forKeyword, declarationStatement, condition, incrementExpression, forStatement);
+            return new ForStatementSyntax(forKeyword, openParenthesisToken, declarationStatement, condition,
+                                          middleSemiColonToken, incrementExpression, closeParenthesisToken, forStatement);
         }
-#nullable enable
-        private ElseClauseSyntax? ParseElseClause( )
+        private ElseClauseSyntax ParseElseClause( )
         {
             if (Current.Kind != SyntaxKind.ElseKeyword)
                 return null;
