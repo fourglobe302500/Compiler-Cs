@@ -137,10 +137,7 @@ namespace Compiler.CodeAnalysis.Syntax
                 int precedence = Current.Kind.GetBinaryOperatorPrecedence();
                 if (precedence == 0 || precedence <= parentPrecedence)
                     break;
-                left = new BinaryExpressionSyntax(
-                left,
-                NextToken(),
-                ParseBinaryExpression(precedence));
+                left = new BinaryExpressionSyntax(left, NextToken(), ParseBinaryExpression(precedence));
             }
             return left;
         }

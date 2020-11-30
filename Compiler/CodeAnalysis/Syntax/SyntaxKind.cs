@@ -23,6 +23,9 @@ namespace Compiler.CodeAnalysis.Syntax
         SlashToken,
         PercentToken,
         HatToken,
+        PipeToken,
+        AmpersandToken,
+        TildeToken,
 
         //Expressions
         LiteralExpression,
@@ -43,8 +46,8 @@ namespace Compiler.CodeAnalysis.Syntax
         WhileKeyword,
 
         //Logical Operators
-        LogicalOrToken,
-        LogicalAndToken,
+        PipePipeToken,
+        AmpersandAmpersandToken,
         NotEqualsToken,
         DoubleEqualsToken,
         LessOrEqualsThenToken,

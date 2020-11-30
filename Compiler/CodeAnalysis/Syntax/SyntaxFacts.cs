@@ -6,14 +6,14 @@ namespace Compiler.CodeAnalysis.Syntax
     public static class SyntaxFacts
     {
         public static int GetUnaryOperatorPrecedence(this SyntaxKind kind) => kind switch {
-            SyntaxKind.PlusToken => 7,
-            SyntaxKind.MinusToken => 7,
-            SyntaxKind.ExclamationToken => 7,
+            SyntaxKind.PlusToken => 6,
+            SyntaxKind.MinusToken => 6,
+            SyntaxKind.ExclamationToken => 6,
+            SyntaxKind.TildeToken => 6,
             _ => 0,
         };
         public static int GetBinaryOperatorPrecedence(this SyntaxKind kind) => kind switch {
-            SyntaxKind.PercentToken => 6,
-            SyntaxKind.HatToken => 6,
+            SyntaxKind.PercentToken => 5,
             SyntaxKind.SlashToken => 5,
             SyntaxKind.StarToken => 5,
             SyntaxKind.MinusToken => 4,
@@ -24,8 +24,11 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.LessThenToken => 3,
             SyntaxKind.GreaterOrEqualsThenToken => 3,
             SyntaxKind.GreaterThenToken => 3,
-            SyntaxKind.LogicalAndToken => 2,
-            SyntaxKind.LogicalOrToken => 1,
+            SyntaxKind.AmpersandToken => 2,
+            SyntaxKind.AmpersandAmpersandToken => 2,
+            SyntaxKind.PipeToken => 1,
+            SyntaxKind.PipePipeToken => 1,
+            SyntaxKind.HatToken => 1,
             _ => 0,
         };
         public static SyntaxKind GetKeywordKind(string text) => text switch {
@@ -53,7 +56,6 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.StarToken => "*",
             SyntaxKind.SlashToken => "/",
             SyntaxKind.PercentToken => "%",
-            SyntaxKind.HatToken => "^",
             SyntaxKind.SemiColonToken => ";",
             SyntaxKind.TrueKeyword => "true",
             SyntaxKind.FalseKeyword => "false",
@@ -67,8 +69,12 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.DoubleEqualsToken => "==",
             SyntaxKind.NotEqualsToken => "!=",
             SyntaxKind.ExclamationToken => "!",
-            SyntaxKind.LogicalOrToken => "||",
-            SyntaxKind.LogicalAndToken => "&&",
+            SyntaxKind.PipePipeToken => "||",
+            SyntaxKind.AmpersandAmpersandToken => "&&",
+            SyntaxKind.HatToken => "^",
+            SyntaxKind.PipeToken => "|",
+            SyntaxKind.AmpersandToken => "&",
+            SyntaxKind.TildeToken => "~",
             SyntaxKind.LessOrEqualsThenToken => "<=",
             SyntaxKind.LessThenToken => "<",
             SyntaxKind.GreaterOrEqualsThenToken => ">=",

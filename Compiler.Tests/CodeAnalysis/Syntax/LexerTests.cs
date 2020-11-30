@@ -92,7 +92,10 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                ((t1Kind == SyntaxKind.ExclamationToken || t1Kind == SyntaxKind.AssigmentToken ||
                t1Kind == SyntaxKind.LessThenToken || t1Kind == SyntaxKind.GreaterThenToken) &&
                (t2Kind == SyntaxKind.AssigmentToken || t2Kind == SyntaxKind.DoubleEqualsToken)) ||
-               (t1Kind == SyntaxKind.NumberToken && t2Kind == SyntaxKind.NumberToken);
+               (t1Kind == SyntaxKind.NumberToken && t2Kind == SyntaxKind.NumberToken) ||
+               (t1Kind == SyntaxKind.PipeToken && (t2Kind == SyntaxKind.PipePipeToken ||
+               t2Kind == SyntaxKind.PipeToken)) || (t1Kind == SyntaxKind.AmpersandToken &&
+               (t2Kind == SyntaxKind.AmpersandAmpersandToken || t2Kind == SyntaxKind.AmpersandToken));
         private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text)> GetTokenPairs( )
         {
             foreach ((SyntaxKind kind1, string text1) in GetTokens())

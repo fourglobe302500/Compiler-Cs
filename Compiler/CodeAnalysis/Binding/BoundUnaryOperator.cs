@@ -24,20 +24,10 @@ namespace Compiler.CodeAnalysis.Binding
         public Type Type { get; }
         private static readonly BoundUnaryOperator[] _operators =
         {
-            new BoundUnaryOperator(
-                SyntaxKind.ExclamationToken,
-                BoundUnaryOperatorKind.LogicalNegation,
-                typeof(bool)),
-
-            new BoundUnaryOperator(
-                SyntaxKind.MinusToken,
-                BoundUnaryOperatorKind.Negation,
-                typeof(int)),
-
-            new BoundUnaryOperator(
-                SyntaxKind.PlusToken,
-                BoundUnaryOperatorKind.Indentity,
-                typeof(int)),
+            new BoundUnaryOperator(SyntaxKind.ExclamationToken,BoundUnaryOperatorKind.LogicalNegation,typeof(bool)),
+            new BoundUnaryOperator(SyntaxKind.MinusToken,BoundUnaryOperatorKind.Negation,typeof(int)),
+            new BoundUnaryOperator(SyntaxKind.PlusToken,BoundUnaryOperatorKind.Indentity,typeof(int)),
+            new BoundUnaryOperator(SyntaxKind.TildeToken, BoundUnaryOperatorKind.OnesComplement, typeof(int))
         };
         public static BoundUnaryOperator Bind(SyntaxKind syntaxKind, Type operandType)
         {

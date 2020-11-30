@@ -87,6 +87,7 @@ namespace Compiler.CodeAnalysis
             BoundUnaryOperatorKind.Indentity => (int)EvaluateExpression(u.Operand),
             BoundUnaryOperatorKind.Negation => -(int)EvaluateExpression(u.Operand),
             BoundUnaryOperatorKind.LogicalNegation => !(bool)EvaluateExpression(u.Operand),
+            BoundUnaryOperatorKind.OnesComplement => ~(int)EvaluateExpression(u.Operand),
             _ => throw new Exception($"Unexpected unary operator {u.Op}"),
         };
         private object EvaluateBinaryExpression(BoundBinaryExpression b) => b.Op.Kind switch {
@@ -95,7 +96,6 @@ namespace Compiler.CodeAnalysis
             BoundBinaryOperatorKind.Multiplication => (int)EvaluateExpression(b.Left) * (int)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Division => (int)EvaluateExpression(b.Left) / (int)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Modulo => (int)EvaluateExpression(b.Left) % (int)EvaluateExpression(b.Right),
-            BoundBinaryOperatorKind.Power => (int)Math.Pow((int)EvaluateExpression(b.Left), (int)EvaluateExpression(b.Right)),
             BoundBinaryOperatorKind.Less => (int)EvaluateExpression(b.Left) < (int)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.LessOrEquals => (int)EvaluateExpression(b.Left) <= (int)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Greater => (int)EvaluateExpression(b.Left) > (int)EvaluateExpression(b.Right),
@@ -104,6 +104,12 @@ namespace Compiler.CodeAnalysis
             BoundBinaryOperatorKind.LogicalOr => (bool)EvaluateExpression(b.Left) || (bool)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Equals => Equals(EvaluateExpression(b.Left), EvaluateExpression(b.Right)),
             BoundBinaryOperatorKind.Diferent => !Equals(EvaluateExpression(b.Left), EvaluateExpression(b.Right)),
+            BoundBinaryOperatorKind.BitwiseXor => b.Type != typeof(int) ? (bool)EvaluateExpression(b.Left) ^ (bool)EvaluateExpression(b.Right)
+                                                                        : (int)EvaluateExpression(b.Left) ^ (int)EvaluateExpression(b.Right),
+            BoundBinaryOperatorKind.BitwiseOr => b.Type != typeof(int) ? (bool)EvaluateExpression(b.Left) | (bool)EvaluateExpression(b.Right)
+                                                                       : (int)EvaluateExpression(b.Left) | (int)EvaluateExpression(b.Right),
+            BoundBinaryOperatorKind.BitwiseAnd => b.Type != typeof(int) ? (bool)EvaluateExpression(b.Left) & (bool)EvaluateExpression(b.Right)
+                                                                        : (int)EvaluateExpression(b.Left) & (int)EvaluateExpression(b.Right),
             _ => throw new Exception($"Unexpected binary operator {b.Op}"),
         };
     }
