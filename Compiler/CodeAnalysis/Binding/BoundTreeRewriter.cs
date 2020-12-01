@@ -17,19 +17,20 @@ namespace Compiler.CodeAnalysis.Binding
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
             ImmutableArray<BoundStatement>.Builder builder = null;
-            for (int i = 0; i < node.Statements.Length)
+            for (int i = 0; i < node.Statements.Length; i++)
             {
                 var oldStatement = node.Statements[i];
                 var newStatement = RewriteStatement(oldStatement);
                 if (oldStatement != newStatement && builder == null)
                 {
-                    builder = ImmutableArray.CreateBuilder<BoundStatement>();
-                    builder.AddRange(node.Statements.RemoveRange(i, node.Statements.Length - 1));
+                    builder = ImmutableArray.CreateBuilder<BoundStatement>(node.Statements.Length);
+                    for (int j = 0; j < i; j++)
+                        builder.Add(node.Statements[j]);
                 }
                 if (builder != null)
                     builder.Add(newStatement);
             }
-            return builder != null ? node : new BoundBlockStatement(builder.MoveToImmutable());
+            return builder == null ? node : new BoundBlockStatement(builder.MoveToImmutable());
         }
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
         {
@@ -40,7 +41,7 @@ namespace Compiler.CodeAnalysis.Binding
         {
             var condition = RewriteExpression(node.Condition);
             var thenStatement = RewriteStatement(node.ThenStatement);
-            var elseStatement = RewriteStatement(node.ElseStatement);
+            var elseStatement = node.ElseStatement == null ? null : RewriteStatement(node.ElseStatement);
             return condition == node.Condition && thenStatement == node.ThenStatement && elseStatement == node.ElseStatement
                 ? node : new BoundIfStatement(condition, thenStatement, elseStatement);
         }
