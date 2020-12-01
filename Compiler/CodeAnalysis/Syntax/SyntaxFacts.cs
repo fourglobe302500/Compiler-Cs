@@ -38,8 +38,8 @@ namespace Compiler.CodeAnalysis.Syntax
             "def" => SyntaxKind.DefKeyword,
             "if" => SyntaxKind.IfKeyword,
             "else" => SyntaxKind.ElseKeyword,
-            "for" => SyntaxKind.ForKeyword,
             "while" => SyntaxKind.WhileKeyword,
+            "for" => SyntaxKind.ForKeyword,
             _ => SyntaxKind.IdentifierToken,
         };
         public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds( )
@@ -63,8 +63,8 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.DefKeyword => "def",
             SyntaxKind.IfKeyword => "if",
             SyntaxKind.ElseKeyword => "else",
-            SyntaxKind.ForKeyword => "for",
             SyntaxKind.WhileKeyword => "while",
+            SyntaxKind.ForKeyword => "for",
             SyntaxKind.AssigmentToken => "=",
             SyntaxKind.DoubleEqualsToken => "==",
             SyntaxKind.NotEqualsToken => "!=",
