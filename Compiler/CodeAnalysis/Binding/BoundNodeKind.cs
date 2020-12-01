@@ -5,10 +5,10 @@ namespace Compiler.CodeAnalysis.Binding
         //Statements
         BlockStatement,
         VariableDeclaration,
-        ExpressionStatement,
         IfStatement,
         WhileStatement,
         ForStatement,
+        ExpressionStatement,
 
         //Expressions
         LiteralExpression,

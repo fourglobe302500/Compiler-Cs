@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 
 using Compiler.CodeAnalysis.Binding;
+using Compiler.CodeAnalysis.Lowering;
 using Compiler.CodeAnalysis.Syntax;
 namespace Compiler.CodeAnalysis
 {
@@ -37,10 +38,12 @@ namespace Compiler.CodeAnalysis
         public EvaluationResult Evaluate(Dictionary<VariableSymbol, object> variables)
             => Syntax.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray().Any()
                 ? new EvaluationResult(Syntax.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray(), null)
-                : new EvaluationResult(ImmutableArray<Diagnostic>.Empty, new Evaluator(GlobalScope.Statement, variables).Evaluate());
+                : new EvaluationResult(ImmutableArray<Diagnostic>.Empty, new Evaluator(GetStatement(), variables).Evaluate());
         public void EmitTree(TextWriter writer)
         {
-            GlobalScope.Statement.WriteTo(writer);
+            GetStatement().WriteTo(writer);
         }
+
+        private BoundStatement GetStatement( ) => Lowerer.Lower(GlobalScope.Statement);
     }
 }
