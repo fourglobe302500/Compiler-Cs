@@ -38,7 +38,7 @@ namespace Compiler.CodeAnalysis
                         index = labelToIndex[g.Label];
                         break;
                     case BoundConditionalGotoStatement c:
-                        if ((bool)EvaluateExpression(c.Condition) ^ c.JumpIfFalse) index = labelToIndex[c.Label];
+                        if ((bool)EvaluateExpression(c.Condition) == c.JumpIfTrue) index = labelToIndex[c.Label];
                         break;
                     case BoundLabelStatement:
                         break;

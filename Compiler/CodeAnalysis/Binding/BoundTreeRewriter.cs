@@ -68,7 +68,7 @@ namespace Compiler.CodeAnalysis.Binding
         protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
         {
             var condition = RewriteExpression(node.Condition);
-            return condition == node.Condition ? node : new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
+            return condition == node.Condition ? node : new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfTrue);
         }
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
         {

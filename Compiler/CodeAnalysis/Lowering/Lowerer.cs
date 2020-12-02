@@ -34,7 +34,7 @@ namespace Compiler.CodeAnalysis.Lowering
             if (node.ElseStatement == null)
             {
                 var endLabel = NewLabel;
-                var endGotoFalse = new BoundConditionalGotoStatement(endLabel, node.Condition, true);
+                var endGotoFalse = new BoundConditionalGotoStatement(endLabel, node.Condition);
                 var result = new BoundBlockStatement(
                     ImmutableArray.Create
                         (endGotoFalse, node.ThenStatement, new BoundLabelStatement(endLabel)));
@@ -44,7 +44,7 @@ namespace Compiler.CodeAnalysis.Lowering
             {
                 var endLabel = NewLabel;
                 var elseLabel = NewLabel;
-                var conditionalGotoStatement = new BoundConditionalGotoStatement(elseLabel, node.Condition, true);
+                var conditionalGotoStatement = new BoundConditionalGotoStatement(elseLabel, node.Condition);
                 var endGoto = new BoundGotoStatement(endLabel);
                 var result = new BoundBlockStatement(ImmutableArray.Create(
                     conditionalGotoStatement, node.ThenStatement,
@@ -62,7 +62,7 @@ namespace Compiler.CodeAnalysis.Lowering
             var loopLabelStatement = new BoundLabelStatement(loopLabel);
             var endLabelStatement = new BoundLabelStatement(endLabel);
             var checkGoto = new BoundGotoStatement(checkLabel);
-            var loopGotoTrue = new BoundConditionalGotoStatement(loopLabel, node.Condition);
+            var loopGotoTrue = new BoundConditionalGotoStatement(loopLabel, node.Condition, true);
             var result = new BoundBlockStatement(ImmutableArray.Create(
                 checkGoto, loopLabelStatement, node.WhileStatement, checkLabelStatement, loopGotoTrue, endLabelStatement));
             return RewriteStatement(result);
