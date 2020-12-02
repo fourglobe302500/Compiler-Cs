@@ -35,17 +35,18 @@ namespace Compiler.CodeAnalysis.Syntax
                 case '%': _kind = SyntaxKind.PercentToken; break;
                 case '^': _kind = SyntaxKind.HatToken; break;
                 case ';': _kind = SyntaxKind.SemiColonToken; break;
+                case '~': _kind = SyntaxKind.TildeToken; break;
                 case '|':
                     if (Lookahead == '|')
-                    { _kind = SyntaxKind.LogicalOrToken; _ = Walk(1); }
+                    { _kind = SyntaxKind.PipePipeToken; _ = Walk(1); }
                     else
-                        _kind = SyntaxKind.InvalidToken;
+                        _kind = SyntaxKind.PipeToken;
                     break;
                 case '&':
                     if (Lookahead == '&')
-                    { _kind = SyntaxKind.LogicalAndToken; _ = Walk(1); }
+                    { _kind = SyntaxKind.AmpersandAmpersandToken; _ = Walk(1); }
                     else
-                        _kind = SyntaxKind.InvalidToken;
+                        _kind = SyntaxKind.AmpersandToken;
                     break;
                 case '!':
                     if (Lookahead == '=')

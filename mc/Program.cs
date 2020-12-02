@@ -15,6 +15,7 @@ namespace Compiler
         {
             int LineNumber = 1;
             bool showTree = false;
+            bool showProgram = false;
             Dictionary<VariableSymbol, object> variables = new Dictionary<VariableSymbol, object>();
             StringBuilder textBuilder = new StringBuilder();
             Compilation previous = null;
@@ -41,14 +42,24 @@ namespace Compiler
                         case "#toogleTree":
                             showTree = !showTree;
                             Console.WriteLine(showTree ?
-                                "Showing the parsed trees" :
-                                "Not showing the parsed trees");
+                                "Showing the parsed trees." :
+                                "Not showing the parsed trees.");
+                            LineNumber = 1;
+                            continue;
+                        case "#toogleProgram":
+                            showProgram = !showProgram;
+                            Console.WriteLine(showProgram ?
+                                "Showing the bound tree." :
+                                "Not showing the bound tree.");
+                            LineNumber = 1;
                             continue;
                         case "#cls":
                             Console.Clear();
+                            LineNumber = 1;
                             continue;
                         case "#reset":
                             previous = null;
+                            LineNumber = 1;
                             continue;
                     }
                 }
@@ -60,17 +71,13 @@ namespace Compiler
                 if (!isBlank && syntaxTree.Diagnostics.Any())
                     continue;
 
-                Compilation compilation = previous == null ?
-                                          new Compilation(syntaxTree) :
-                                          previous.ContinueWith(syntaxTree);
+                Compilation compilation = previous == null ? new Compilation(syntaxTree) : previous.ContinueWith(syntaxTree);
+                if (showTree)
+                    syntaxTree.Root.WriteTo(Console.Out);
+                if (showProgram)
+                    compilation.EmitTree(Console.Out);
                 EvaluationResult result = compilation.Evaluate(variables);
                 ImmutableArray<Diagnostic> diagnostics = result.Diagnostics;
-                if (showTree)
-                {
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    syntaxTree.Root.WriteTo(Console.Out);
-                    Console.ResetColor();
-                }
                 if (!diagnostics.Any())
                 {
                     Console.ForegroundColor = ConsoleColor.Magenta;

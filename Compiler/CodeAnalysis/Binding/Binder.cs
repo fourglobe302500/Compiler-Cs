@@ -149,8 +149,7 @@ namespace Compiler.CodeAnalysis.Binding
             }
             return new BoundUnaryExpression(boundOperator, boundOperand);
         }
-        private BoundExpression BindBinaryExpression(
-          BinaryExpressionSyntax syntax)
+        private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax)
         {
             BoundExpression boundLeft = BindExpression(syntax.Left);
             BoundExpression boundRight = BindExpression(syntax.Right);

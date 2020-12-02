@@ -5,13 +5,16 @@ namespace Compiler.CodeAnalysis.Binding
         //Statements
         BlockStatement,
         VariableDeclaration,
-        ExpressionStatement,
         IfStatement,
         WhileStatement,
         ForStatement,
+        LabelStatement,
+        GotoStatement,
+        ConditionalGotoStatement,
+        ExpressionStatement,
 
         //Expressions
-        LiteralToken,
+        LiteralExpression,
         VariableExpression,
         AssigmentExpression,
         UnaryExpression,

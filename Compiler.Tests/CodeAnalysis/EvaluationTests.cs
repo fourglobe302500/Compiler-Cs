@@ -13,12 +13,12 @@ namespace Compiler.Tests.CodeAnalysis
         [InlineData("1;", 1)]
         [InlineData("+1;", 1)]
         [InlineData("-1;", -1)]
+        [InlineData("~1;", -2)]
         [InlineData("1 + 2;", 3)]
         [InlineData("9 - 12;", -3)]
         [InlineData("3 * 6;", 18)]
         [InlineData("4 / 2;", 2)]
         [InlineData("10 % 3;", 1)]
-        [InlineData("2 ^ 3;", 8)]
         [InlineData("(10);", 10)]
         [InlineData("1 == 12;", false)]
         [InlineData("1 == 1;", true)]
@@ -32,6 +32,12 @@ namespace Compiler.Tests.CodeAnalysis
         [InlineData("6 >= 7;", false)]
         [InlineData("4 <= 9;", true)]
         [InlineData("4 <= -9;", false)]
+        [InlineData("1 | 2;", 3)]
+        [InlineData("1 & 2;", 0)]
+        [InlineData("5 | 10;", 15)]
+        [InlineData("55 & 10;", 2)]
+        [InlineData("2 ^ 3;", 1)]
+        [InlineData("1 ^ 3;", 2)]
         [InlineData("true == true;", true)]
         [InlineData("true == false;", false)]
         [InlineData("false != false;", false)]
@@ -47,7 +53,7 @@ namespace Compiler.Tests.CodeAnalysis
         [InlineData("{ var a = 20; if (a == 0) a = 10; else a = 9;}", 9)]
         [InlineData("{ var a = 50; if (a == 50) {a = a - 10; if (a == 20) a = a * 2; else a = a / 2;}}", 20)]
         [InlineData("{ var x = 0; while (x < 10) x = x + 1; x; }", 10)]
-        [InlineData("{ var i = 1; for (var x = 0; x < 4; x = x + 1) {i = i * 2;}}", 16)]
+        [InlineData("{ var i = 1; for (var x = 0; x < 4; x = x + 1) {i = i * 2;}i;}", 16)]
         public void Evalutor_Works(string text, object value)
         {
             EvaluationResult result = new Compilation(SyntaxTree.Parse(text)).Evaluate(new Dictionary<VariableSymbol, object>());
@@ -225,7 +231,7 @@ namespace Compiler.Tests.CodeAnalysis
 
             AssertDiagnostics(text, diagnostics);
         }
-        private void AssertDiagnostics(string text, string diagnosticText)
+        private static void AssertDiagnostics(string text, string diagnosticText)
         {
             var annotatedText = AnnotatedText.Parse(text);
             var syntaxTree = SyntaxTree.Parse(annotatedText.Text);

@@ -6,7 +6,7 @@ namespace Compiler.CodeAnalysis.Binding
     {
         public BoundLiteralExpression(object value) => Value = value;
         public override Type Type => Value.GetType();
-        public override BoundNodeKind Kind => BoundNodeKind.LiteralToken;
+        public override BoundNodeKind Kind => BoundNodeKind.LiteralExpression;
         public object Value { get; }
     }
 }

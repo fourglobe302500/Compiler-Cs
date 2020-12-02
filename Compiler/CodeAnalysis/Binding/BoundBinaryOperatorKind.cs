@@ -7,7 +7,6 @@ namespace Compiler.CodeAnalysis.Binding
         Multiplication,
         Division,
         Modulo,
-        Power,
         LogicalOr,
         LogicalAnd,
         Equals,
@@ -16,5 +15,8 @@ namespace Compiler.CodeAnalysis.Binding
         Less,
         GreaterOrEquals,
         Greater,
+        BitwiseXor,
+        BitwiseOr,
+        BitwiseAnd,
     }
 }
