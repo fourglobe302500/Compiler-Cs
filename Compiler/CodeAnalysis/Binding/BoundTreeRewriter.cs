@@ -20,7 +20,7 @@ namespace Compiler.CodeAnalysis.Binding
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
             ImmutableArray<BoundStatement>.Builder builder = null;
-            for (int i = 0; i < node.Statements.Length; i++)
+            for (var i = 0; i < node.Statements.Length; i++)
             {
                 var oldStatement = node.Statements[i];
                 var newStatement = RewriteStatement(oldStatement);

@@ -231,7 +231,7 @@ namespace Compiler.Tests.CodeAnalysis
 
             AssertDiagnostics(text, diagnostics);
         }
-        private void AssertDiagnostics(string text, string diagnosticText)
+        private static void AssertDiagnostics(string text, string diagnosticText)
         {
             var annotatedText = AnnotatedText.Parse(text);
             var syntaxTree = SyntaxTree.Parse(annotatedText.Text);
