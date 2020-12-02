@@ -8,57 +8,54 @@ namespace Compiler.CodeAnalysis
     internal sealed class Evaluator
     {
         private readonly Dictionary<VariableSymbol, object> _variables;
-        private readonly BoundStatement _root;
+        private readonly BoundBlockStatement _root;
         private object _lastValue;
-        public Evaluator(BoundStatement root, Dictionary<VariableSymbol, object> variables)
+        public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables)
         {
             _root = root;
             _variables = variables;
         }
         public object Evaluate( )
         {
-            EvaluateStatement(_root);
+            var labelToIndex = new Dictionary<LabelSymbol, int>();
+
+            for (var i = 0; i < _root.Statements.Length; i++)
+                if (_root.Statements[i] is BoundLabelStatement l)
+                    labelToIndex.Add(l.Label, i);
+            var index = 0;
+            while (index < _root.Statements.Length)
+            {
+                var s = _root.Statements[index];
+                switch (s)
+                {
+                    case BoundVariableDeclaration v:
+                        EvaluateVariableDeclaration(v);
+                        break;
+                    case BoundExpressionStatement e:
+                        EvaluateExpressionStatement(e);
+                        break;
+                    case BoundGotoStatement g:
+                        index = labelToIndex[g.Label];
+                        break;
+                    case BoundConditionalGotoStatement c:
+                        if ((bool)EvaluateExpression(c.Condition) ^ c.JumpIfFalse) index = labelToIndex[c.Label];
+                        break;
+                    case BoundLabelStatement:
+                        break;
+                    default:
+                        throw new Exception($"Unexpected node {s.Kind}");
+                }
+                index++;
+            }
             return _lastValue;
         }
-        private void EvaluateStatement(BoundStatement statement)
-        {
-            switch (statement.Kind)
-            {
-                case BoundNodeKind.BlockStatement:
-                    EvaluateBlockStatement((BoundBlockStatement)statement);
-                    break;
-                case BoundNodeKind.VariableDeclaration:
-                    EvaluateVariableDeclaration((BoundVariableDeclaration)statement);
-                    break;
-                case BoundNodeKind.IfStatement:
-                    EvaluateIfStatement((BoundIfStatement)statement);
-                    break;
-                case BoundNodeKind.WhileStatement:
-                    EvaluateWhileStatement((BoundWhileStatement)statement);
-                    break;
-                case BoundNodeKind.ExpressionStatement:
-                    EvaluateExpressionStatement((BoundExpressionStatement)statement);
-                    break;
-                default:
-                    throw new Exception($"Unexpected node {statement.Kind}");
-            }
-        }
-        private void EvaluateBlockStatement(BoundBlockStatement statement) => statement.Statements.ToImmutableList().ForEach(s => EvaluateStatement(s));
         private void EvaluateVariableDeclaration(BoundVariableDeclaration statement)
-            => _lastValue = _variables[statement.Variable] = EvaluateExpression(statement.Initializer);
-        private void EvaluateIfStatement(BoundIfStatement statement)
         {
-            var condition = (bool)EvaluateExpression(statement.Condition);
-            if (condition)
-                EvaluateStatement(statement.ThenStatement);
-            else if (statement.ElseStatement != null)
-                EvaluateStatement(statement.ElseStatement);
+            var value = EvaluateExpression(statement.Initializer);
+            _variables[statement.Variable] = value;
+            _lastValue = value;
         }
-        private void EvaluateWhileStatement(BoundWhileStatement statement)
-        {
-            while ((bool)EvaluateExpression(statement.Condition))
-                EvaluateStatement(statement.WhileStatement);
-        }
+
         private void EvaluateExpressionStatement(BoundExpressionStatement statement) => _lastValue = EvaluateExpression(statement.Expression);
         private object EvaluateExpression(BoundExpression node) => node switch {
             BoundLiteralExpression l => EvaluateLiteralExpression(l),

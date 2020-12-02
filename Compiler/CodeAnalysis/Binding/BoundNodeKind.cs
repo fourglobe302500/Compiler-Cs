@@ -8,6 +8,9 @@ namespace Compiler.CodeAnalysis.Binding
         IfStatement,
         WhileStatement,
         ForStatement,
+        LabelStatement,
+        GotoStatement,
+        ConditionalGotoStatement,
         ExpressionStatement,
 
         //Expressions

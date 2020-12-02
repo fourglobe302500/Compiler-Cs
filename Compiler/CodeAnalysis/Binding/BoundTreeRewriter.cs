@@ -11,6 +11,9 @@ namespace Compiler.CodeAnalysis.Binding
             BoundNodeKind.IfStatement => RewriteIfStatement((BoundIfStatement)node),
             BoundNodeKind.WhileStatement => RewriteWhileStatement((BoundWhileStatement)node),
             BoundNodeKind.ForStatement => RewriteForStatement((BoundForStatement)node),
+            BoundNodeKind.LabelStatement => RewriteLabelStatement((BoundLabelStatement)node),
+            BoundNodeKind.GotoStatement => RewriteGotoStatement((BoundGotoStatement)node),
+            BoundNodeKind.ConditionalGotoStatement => RewriteConditionalGotoStatement((BoundConditionalGotoStatement)node),
             BoundNodeKind.ExpressionStatement => RewriteExpressionStatement((BoundExpressionStatement)node),
             _ => throw new Exception($"Unexpected node: {node.Kind}"),
         };
@@ -59,6 +62,13 @@ namespace Compiler.CodeAnalysis.Binding
             var forStatement = RewriteStatement(node.ForStatement);
             return declarationStatement == node.DeclarationStatement && condition == node.Condition && increment == node.Increment && forStatement == node.ForStatement
                 ? node : new BoundForStatement(declarationStatement, condition, increment, forStatement);
+        }
+        protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node) => node;
+        protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
+        protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
+        {
+            var condition = RewriteExpression(node.Condition);
+            return condition == node.Condition ? node : new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfFalse);
         }
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
         {
