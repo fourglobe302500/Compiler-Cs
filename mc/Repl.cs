@@ -35,8 +35,8 @@ namespace Compiler
             private readonly int _cursorTop;
 
             private int _renderedLineCount;
-            private int currentLineIndex;
-            private int currentCharacterIndex;
+            private int _currentLineIndex;
+            private int _currentCharacterIndex;
 
             public SubmissionView(Action<string> lineRenderer, ObservableCollection<string> submissionDocument)
             {
@@ -83,30 +83,30 @@ namespace Compiler
 
             private void UpdateCursorPosition( )
             {
-                Console.CursorTop = _cursorTop + currentLineIndex;
-                Console.CursorLeft = 2 + currentCharacterIndex;
+                Console.CursorTop = _cursorTop + _currentLineIndex;
+                Console.CursorLeft = 2 + _currentCharacterIndex;
             }
 
             public int CurrentLineIndex
             {
-                get => currentLineIndex;
+                get => _currentLineIndex;
                 set
                 {
-                    if (currentLineIndex == value)
+                    if (_currentLineIndex == value)
                         return;
-                    currentLineIndex = value;
+                    _currentLineIndex = value;
                     UpdateCursorPosition();
                 }
             }
 
             public int CurrentCharacterIndex
             {
-                get => currentCharacterIndex;
+                get => _currentCharacterIndex;
                 set
                 {
-                    if (currentCharacterIndex == value)
+                    if (_currentCharacterIndex == value)
                         return;
-                    currentCharacterIndex = value;
+                    _currentCharacterIndex = value;
                     UpdateCursorPosition();
                 }
             }

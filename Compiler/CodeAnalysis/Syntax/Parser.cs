@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 using Compiler.CodeAnalysis.Text;
+
 namespace Compiler.CodeAnalysis.Syntax
 {
     internal sealed class Parser
@@ -12,6 +13,7 @@ namespace Compiler.CodeAnalysis.Syntax
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private readonly SourceText _text;
         private int _position;
+
         public Parser(SourceText text)
         {
             List<SyntaxToken> tokens = new List<SyntaxToken>();
@@ -33,17 +35,20 @@ namespace Compiler.CodeAnalysis.Syntax
             _text = text;
         }
         public DiagnosticBag Diagnostics => _diagnostics;
+
         private SyntaxToken Peek(int offset) => _position + offset >= _tokens.Length ? _tokens[^1] : _tokens[_position + offset];
         private SyntaxToken Current => Peek(0);
         private SyntaxToken LookAhead => Peek(1);
         private SyntaxToken Last => Peek(-1);
         public SourceText Text => _text;
+
         public SyntaxToken NextToken( )
         {
             SyntaxToken current = Current;
             _position++;
             return current;
         }
+
         private SyntaxToken MatchToken(SyntaxKind kind)
         {
             if (Current.Kind == kind)
@@ -51,7 +56,9 @@ namespace Compiler.CodeAnalysis.Syntax
             _diagnostics.ReportUnexpectedToken(Current.Span, Current.Kind, kind);
             return new SyntaxToken(kind, Current.Position, null, null);
         }
+
         public CompilationUnitSyntax ParseCompilationUnit( ) => new CompilationUnitSyntax(ParseStatement(), MatchToken(SyntaxKind.EndOfFileToken));
+
         private StatementSyntax ParseStatement( ) => Current.Kind switch {
             SyntaxKind.OpenBraceToken => ParseBlockStatement(),
             var kind when new[] { SyntaxKind.VarKeyword, SyntaxKind.DefKeyword }.Contains(kind) => ParseVariableDeclaration(),
@@ -60,12 +67,13 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.ForKeyword => ParseForStatement(),
             _ => ParseExpressionStatement()
         };
+
         private BlockStatementSyntax ParseBlockStatement( )
         {
             ImmutableArray<StatementSyntax>.Builder statements = ImmutableArray.CreateBuilder<StatementSyntax>();
             SyntaxToken openBraceToken = MatchToken(SyntaxKind.OpenBraceToken);
             var startToken = Current;
-            while (Current.Kind != SyntaxKind.EndOfFileToken && Current.Kind != SyntaxKind.CloseBraceToken)
+            while (Current.Kind is not SyntaxKind.EndOfFileToken and not SyntaxKind.CloseBraceToken)
             {
                 StatementSyntax statement = ParseStatement();
                 statements.Add(statement);
@@ -75,12 +83,15 @@ namespace Compiler.CodeAnalysis.Syntax
             }
             return new BlockStatementSyntax(openBraceToken, statements.ToImmutable(), MatchToken(SyntaxKind.CloseBraceToken));
         }
+
         private ExpressionStatementSyntax ParseExpressionStatement( ) => new ExpressionStatementSyntax(ParseExpression(), MatchToken(SyntaxKind.SemiColonToken));
+
         private VariableDeclarationSyntax ParseVariableDeclaration( )
             => new VariableDeclarationSyntax(MatchToken(Current.Kind == SyntaxKind.VarKeyword ? SyntaxKind.VarKeyword : SyntaxKind.DefKeyword),
                                              MatchToken(SyntaxKind.IdentifierToken),
                                              MatchToken(SyntaxKind.AssigmentToken),
                                              ParseExpression(), MatchToken(SyntaxKind.SemiColonToken));
+
         private IfStatementSyntax ParseIfStatement( )
         {
             var ifKeyword = MatchToken(SyntaxKind.IfKeyword);
@@ -89,6 +100,7 @@ namespace Compiler.CodeAnalysis.Syntax
             var elseClause = ParseElseClause();
             return new IfStatementSyntax(ifKeyword, condition, thenStatement, elseClause);
         }
+
         private WhileStatementSyntax ParseWhileStatement( )
         {
             var whileKeyword = MatchToken(SyntaxKind.WhileKeyword);
@@ -96,6 +108,7 @@ namespace Compiler.CodeAnalysis.Syntax
             var whileStatement = ParseStatement();
             return new WhileStatementSyntax(whileKeyword, condition, whileStatement);
         }
+
         private ForStatementSyntax ParseForStatement( )
         {
             var forKeyword = MatchToken(SyntaxKind.ForKeyword);
@@ -109,6 +122,7 @@ namespace Compiler.CodeAnalysis.Syntax
             return new ForStatementSyntax(forKeyword, openParenthesisToken, declarationStatement, condition,
                                           middleSemiColonToken, incrementExpression, closeParenthesisToken, forStatement);
         }
+
         private ElseClauseSyntax ParseElseClause( )
         {
             if (Current.Kind != SyntaxKind.ElseKeyword)
@@ -117,11 +131,14 @@ namespace Compiler.CodeAnalysis.Syntax
             var code = ParseStatement();
             return new ElseClauseSyntax(keyword, code);
         }
+
         private ExpressionSyntax ParseExpression( ) => ParseAssigmentExpression();
+
         private ExpressionSyntax ParseAssigmentExpression( ) =>
             Current.Kind == SyntaxKind.IdentifierToken && LookAhead.Kind == SyntaxKind.AssigmentToken ?
                 new AssigmentExpressionSyntax(NextToken(), NextToken(), ParseAssigmentExpression()) :
                 ParseBinaryExpression();
+
         private ExpressionSyntax ParseBinaryExpression(int parentPrecedence = 0)
         {
             ExpressionSyntax left;
@@ -141,6 +158,7 @@ namespace Compiler.CodeAnalysis.Syntax
             }
             return left;
         }
+
         private ExpressionSyntax ParsePrimaryExpression( ) => Current.Kind switch {
             SyntaxKind.OpenParenthesisToken => ParseParenthesizedExpression(),
             SyntaxKind.TrueKeyword => ParseBooleanLiteral(),
@@ -148,18 +166,22 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.NumberToken => ParseNumberLiteral(),
             _ => ParseNameExpression(),
         };
+
         private ExpressionSyntax ParseParenthesizedExpression( )
             => new ParenthesizedExpressionSyntax(
                 MatchToken(SyntaxKind.OpenParenthesisToken),
                 ParseExpression(),
                 MatchToken(SyntaxKind.CloseParenthesisToken));
+
         private ExpressionSyntax ParseBooleanLiteral( ) =>
             new LiteralExpressionSyntax(
                 Current.Kind == SyntaxKind.TrueKeyword ? MatchToken(SyntaxKind.TrueKeyword) :
                         MatchToken(SyntaxKind.FalseKeyword),
                 Last.Kind == SyntaxKind.TrueKeyword);
+
         private ExpressionSyntax ParseNumberLiteral( )
             => new LiteralExpressionSyntax(MatchToken(SyntaxKind.NumberToken));
+
         private ExpressionSyntax ParseNameExpression( ) =>
             new NameExpressionSyntax(MatchToken(SyntaxKind.IdentifierToken));
     }
