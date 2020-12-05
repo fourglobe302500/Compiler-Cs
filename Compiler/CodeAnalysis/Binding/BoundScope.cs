@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 
+using Compiler.CodeAnalysis.Symbols;
+
 namespace Compiler.CodeAnalysis.Binding
 {
     internal sealed class BoundScope

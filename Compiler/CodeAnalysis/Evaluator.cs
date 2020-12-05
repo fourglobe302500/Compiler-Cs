@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 
 using Compiler.CodeAnalysis.Binding;
+using Compiler.CodeAnalysis.Symbols;
+
 namespace Compiler.CodeAnalysis
 {
     internal sealed class Evaluator

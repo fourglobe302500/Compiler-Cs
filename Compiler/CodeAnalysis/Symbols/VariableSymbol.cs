@@ -1,5 +1,6 @@
 using System;
-namespace Compiler.CodeAnalysis
+
+namespace Compiler.CodeAnalysis.Symbols
 {
     public sealed class VariableSymbol
     {
@@ -12,6 +13,7 @@ namespace Compiler.CodeAnalysis
         public bool IsReadOnly { get; }
         public Type Type { get; }
         public string Name { get; }
+
         public override string ToString( ) => Name;
     }
 }
