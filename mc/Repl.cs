@@ -369,6 +369,8 @@ namespace Compiler
 
         private void UpdateDocumentFromHistoty(ObservableCollection<string> document, SubmissionView view)
         {
+            if (_history.Count == 0)
+                return;
             document.Clear();
             var text = _history[_historyIndex].Split(Environment.NewLine);
             foreach (var line in text)

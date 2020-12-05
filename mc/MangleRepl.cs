@@ -70,7 +70,10 @@ namespace Compiler
             }
         }
 
-        protected override bool IsCompleteSubmission(string text) => string.IsNullOrEmpty(text) ? true : !SyntaxTree.Parse(text).Diagnostics.Any();
+        protected override bool IsCompleteSubmission(string text)
+            => string.IsNullOrEmpty(text) || !GetLastToken(SyntaxTree.Parse(text).Root.Statement).IsMissing;
+
+        private static SyntaxToken GetLastToken(SyntaxNode node) => node is SyntaxToken token ? token : GetLastToken(node.GetChildren().Last());
 
         protected override void EvaluateSubmission(string text)
         {

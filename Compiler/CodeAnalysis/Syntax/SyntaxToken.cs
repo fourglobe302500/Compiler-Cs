@@ -1,4 +1,5 @@
 using Compiler.CodeAnalysis.Text;
+
 namespace Compiler.CodeAnalysis.Syntax
 {
     public sealed class SyntaxToken : SyntaxNode
@@ -16,5 +17,6 @@ namespace Compiler.CodeAnalysis.Syntax
         public int Position { get; }
         public string Text { get; }
         public object Value { get; }
+        public bool IsMissing => Text == null;
     }
 }
