@@ -10,7 +10,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
     public class LexerTests
     {
         [Fact]
-        public void Lexer_Test_AllTokens( )
+        public void Lexer_Cover_AllTokens( )
         {
             SortedSet<SyntaxKind> untestedTokensKinds =
                 new SortedSet<SyntaxKind>(Enum.GetValues(typeof(SyntaxKind))
