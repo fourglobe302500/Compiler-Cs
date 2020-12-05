@@ -217,6 +217,7 @@ namespace Compiler
             }
         }
 
+#pragma warning disable CA1822 // Mark members as static
 
         private void HandleControlEnter(ObservableCollection<string> document, SubmissionView view)
         {
@@ -324,8 +325,10 @@ namespace Compiler
             }
         }
 
+#pragma warning disable IDE0060 // Remove unused parameter
 
         private void HandleHome(ObservableCollection<string> document, SubmissionView view)
+#pragma warning restore IDE0060 // Remove unused parameter
             => view.CurrentCharacterIndex = 0;
 
         private void HandleEnd(ObservableCollection<string> document, SubmissionView view)
@@ -353,6 +356,7 @@ namespace Compiler
                     view.CurrentCharacterIndex = 0;
             }
         }
+#pragma warning restore CA1822 // Mark members as static
 
         private void HandlePageUp(ObservableCollection<string> document, SubmissionView view)
         {
@@ -380,8 +384,10 @@ namespace Compiler
             view.CurrentCharacterIndex = document[view.CurrentLineIndex].Length;
         }
 
+#pragma warning disable CA1822 // Mark members as static
 
         private void HandleTyping(ObservableCollection<string> document, SubmissionView view, string text)
+#pragma warning restore CA1822 // Mark members as static
         {
             var lineIndex = view.CurrentLineIndex;
             var start = view.CurrentCharacterIndex;
