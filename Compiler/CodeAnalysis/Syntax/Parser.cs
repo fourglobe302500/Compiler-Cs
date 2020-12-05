@@ -164,6 +164,7 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.TrueKeyword => ParseBooleanLiteral(),
             SyntaxKind.FalseKeyword => ParseBooleanLiteral(),
             SyntaxKind.NumberToken => ParseNumberLiteral(),
+            SyntaxKind.StringToken => ParseStringLiteral(),
             _ => ParseNameExpression(),
         };
 
@@ -181,6 +182,9 @@ namespace Compiler.CodeAnalysis.Syntax
 
         private ExpressionSyntax ParseNumberLiteral( )
             => new LiteralExpressionSyntax(MatchToken(SyntaxKind.NumberToken));
+
+        private ExpressionSyntax ParseStringLiteral( )
+            => new LiteralExpressionSyntax(MatchToken(SyntaxKind.StringToken));
 
         private ExpressionSyntax ParseNameExpression( ) =>
             new NameExpressionSyntax(MatchToken(SyntaxKind.IdentifierToken));

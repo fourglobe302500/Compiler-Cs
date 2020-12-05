@@ -5,6 +5,7 @@ using System.Linq;
 using Compiler.CodeAnalysis.Syntax;
 
 using Xunit;
+
 namespace Compiler.Tests.CodeAnalysis.Syntax
 {
     public class LexerTests
@@ -14,13 +15,14 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
         {
             SortedSet<SyntaxKind> untestedTokensKinds =
                 new SortedSet<SyntaxKind>(Enum.GetValues(typeof(SyntaxKind))
-                    .Cast<SyntaxKind>()
-                    .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token")));
-            _ = untestedTokensKinds.Remove(SyntaxKind.EndOfFileToken);
-            _ = untestedTokensKinds.Remove(SyntaxKind.InvalidToken);
+                                              .Cast<SyntaxKind>()
+                                              .Where(k => k.ToString().EndsWith("Keyword") || k.ToString().EndsWith("Token")));
+            untestedTokensKinds.Remove(SyntaxKind.EndOfFileToken);
+            untestedTokensKinds.Remove(SyntaxKind.InvalidToken);
             untestedTokensKinds.ExceptWith(GetTokens().Select(t => t.kind));
             Assert.Empty(untestedTokensKinds);
         }
+
         [Theory]
         [MemberData(nameof(GetTokenData))]
         public void Lexer_Lexes_Token(SyntaxKind kind, string text)
@@ -29,6 +31,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             Assert.Equal(kind, token.Kind);
             Assert.Equal(text, token.Text);
         }
+
         [Theory]
         [MemberData(nameof(GetTokenPairData))]
         public void Lexer_Lexes_Token_Pairs(SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text)
@@ -40,6 +43,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             Assert.Equal(tokens[1].Kind, t2Kind);
             Assert.Equal(tokens[1].Text, t2Text);
         }
+
         [Theory]
         [MemberData(nameof(GetTokenPairWithSeparatorData))]
         public void Lexer_Lexes_Token_Pairs_With_Separator(SyntaxKind t1Kind, string t1Text, SyntaxKind spKind, string spText, SyntaxKind t2Kind, string t2Text)
@@ -53,31 +57,34 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             Assert.Equal(tokens[2].Kind, t2Kind);
             Assert.Equal(tokens[2].Text, t2Text);
         }
+
         public static IEnumerable<object[]> GetTokenData( )
             => GetTokens().Select(t => new object[] { t.kind, t.text });
+
         public static IEnumerable<object[]> GetTokenPairData( )
             => GetTokenPairs().Select(t => new object[] { t.t1Kind, t.t1Text, t.t2Kind, t.t2Text });
+
         public static IEnumerable<object[]> GetTokenPairWithSeparatorData( ) => GetTokenPairsWithSeparator().Select(t => new object[] {
                                                                                                                    t.t1Kind, t.t1Text,
                                                                                                                    t.spkind, t.spText,
                                                                                                                    t.t2Kind, t.t2Text });
+
         private static IEnumerable<(SyntaxKind kind, string text)> GetTokens( )
             => Enum.GetValues(typeof(SyntaxKind))
                    .Cast<SyntaxKind>()
                    .Select(k => (kind: k, text: SyntaxFacts.GetText(k)))
                    .Where(t => t.text != null)
+                   .Concat(GetSeparators())
                    .Concat(new[] {
-                        (SyntaxKind.WhiteSpaceToken, " "),
-                        (SyntaxKind.WhiteSpaceToken, "  "),
-                        (SyntaxKind.WhiteSpaceToken, "\r"),
-                        (SyntaxKind.WhiteSpaceToken, "\n"),
-                        (SyntaxKind.WhiteSpaceToken, "\r\n"),
                         (SyntaxKind.NumberToken, "1"),
                         (SyntaxKind.NumberToken, "123456"),
                         (SyntaxKind.IdentifierToken, "a"),
                         (SyntaxKind.IdentifierToken, "abc"),
                         (SyntaxKind.IdentifierToken, "testing"),
+                        (SyntaxKind.StringToken, "\"test\""),
+                        (SyntaxKind.StringToken, "\"te\\\"st\"")
                    });
+
         private static IEnumerable<(SyntaxKind kind, string text)> GetSeparators( ) => new[]
         {
             (SyntaxKind.WhiteSpaceToken, " "),
@@ -86,6 +93,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
             (SyntaxKind.WhiteSpaceToken, "\n"),
             (SyntaxKind.WhiteSpaceToken, "\r\n"),
         };
+
         private static bool RequiresSeparator(SyntaxKind t1Kind, SyntaxKind t2Kind)
             => ((t1Kind == SyntaxKind.IdentifierToken || t1Kind.ToString().EndsWith("Keyword")) &&
                (t2Kind == SyntaxKind.IdentifierToken || t2Kind.ToString().EndsWith("Keyword"))) ||
@@ -96,6 +104,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                (t1Kind == SyntaxKind.PipeToken && (t2Kind == SyntaxKind.PipePipeToken ||
                t2Kind == SyntaxKind.PipeToken)) || (t1Kind == SyntaxKind.AmpersandToken &&
                (t2Kind == SyntaxKind.AmpersandAmpersandToken || t2Kind == SyntaxKind.AmpersandToken));
+
         private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind t2Kind, string t2Text)> GetTokenPairs( )
         {
             foreach ((SyntaxKind kind1, string text1) in GetTokens())
@@ -107,6 +116,7 @@ namespace Compiler.Tests.CodeAnalysis.Syntax
                         yield return (kind1, text1, kind2, text2);
                 }
         }
+
         private static IEnumerable<(SyntaxKind t1Kind, string t1Text, SyntaxKind spkind, string spText, SyntaxKind t2Kind, string t2Text)> GetTokenPairsWithSeparator( )
         {
             foreach ((SyntaxKind kind1, string text1) in GetTokens())
