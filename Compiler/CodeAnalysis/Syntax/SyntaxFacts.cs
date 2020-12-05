@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 namespace Compiler.CodeAnalysis.Syntax
 {
     public static class SyntaxFacts
@@ -12,6 +13,7 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.TildeToken => 6,
             _ => 0,
         };
+
         public static int GetBinaryOperatorPrecedence(this SyntaxKind kind) => kind switch {
             SyntaxKind.PercentToken => 5,
             SyntaxKind.SlashToken => 5,
@@ -31,6 +33,7 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.HatToken => 1,
             _ => 0,
         };
+
         public static SyntaxKind GetKeywordKind(string text) => text switch {
             "true" => SyntaxKind.TrueKeyword,
             "false" => SyntaxKind.FalseKeyword,
@@ -42,10 +45,16 @@ namespace Compiler.CodeAnalysis.Syntax
             "for" => SyntaxKind.ForKeyword,
             _ => SyntaxKind.IdentifierToken,
         };
+
+        public static SyntaxKind[] GetKeywords( )
+            => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Where(kind => kind.ToString().EndsWith("Keyword")).ToArray();
+
         public static IEnumerable<SyntaxKind> GetUnaryOperatorKinds( )
             => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Where(kind => GetUnaryOperatorPrecedence(kind) > 0);
+
         public static IEnumerable<SyntaxKind> GetBinaryOperatorKinds( )
             => ((SyntaxKind[])Enum.GetValues(typeof(SyntaxKind))).Where(kind => GetBinaryOperatorPrecedence(kind) > 0);
+
         public static string GetText(SyntaxKind kind) => kind switch {
             SyntaxKind.CloseParenthesisToken => ")",
             SyntaxKind.OpenParenthesisToken => "(",
