@@ -71,7 +71,9 @@ namespace Compiler
         }
 
         protected override bool IsCompleteSubmission(string text)
-            => string.IsNullOrEmpty(text) || !SyntaxTree.Parse(text).Root.Statement.GetLastToken().IsMissing;
+            => string.IsNullOrEmpty(text)
+               || text.Split(Environment.NewLine).Reverse().TakeWhile(s => string.IsNullOrEmpty(s)).Count() >= 2
+               || !SyntaxTree.Parse(text).Root.Statement.GetLastToken().IsMissing;
 
         protected override void EvaluateSubmission(string text)
         {
