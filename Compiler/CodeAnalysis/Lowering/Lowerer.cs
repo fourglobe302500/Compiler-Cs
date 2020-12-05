@@ -11,7 +11,7 @@ namespace Compiler.CodeAnalysis.Lowering
         private Lowerer( )
         {
         }
-        private LabelSymbol NewLabel => new LabelSymbol($"Label{++_labelCount}");
+        private BoundLabel NewLabel => new BoundLabel($"Label{++_labelCount}");
         public static BoundBlockStatement Lower(BoundStatement statement) => Flatten(new Lowerer().RewriteStatement(statement));
         private static BoundBlockStatement Flatten(BoundStatement statement)
         {
