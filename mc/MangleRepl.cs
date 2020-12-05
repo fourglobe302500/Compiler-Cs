@@ -29,7 +29,7 @@ namespace Compiler
             {
                 Console.ForegroundColor = token.Kind switch {
                     var keyKind when SyntaxFacts.GetKeywords().Contains(keyKind) => ConsoleColor.Blue,
-                    SyntaxKind.IdentifierToken => ConsoleColor.DarkGreen,
+                    SyntaxKind.IdentifierToken => ConsoleColor.DarkYellow,
                     SyntaxKind.NumberToken => ConsoleColor.Magenta,
                     SyntaxKind.InvalidToken => ConsoleColor.Red,
                     _ => ConsoleColor.Cyan,
@@ -86,7 +86,7 @@ namespace Compiler
             if (!diagnostics.Any())
             {
                 Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine($" => {result.Value}");
+                Console.WriteLine(result.Value);
                 Console.ResetColor();
                 _state = compilation;
             }
