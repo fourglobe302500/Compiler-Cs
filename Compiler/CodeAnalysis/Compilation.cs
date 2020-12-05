@@ -39,10 +39,7 @@ namespace Compiler.CodeAnalysis
             => Syntax.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray().Any()
                 ? new EvaluationResult(Syntax.Diagnostics.Concat(GlobalScope.Diagnostics).ToImmutableArray(), null)
                 : new EvaluationResult(ImmutableArray<Diagnostic>.Empty, new Evaluator(GetStatement(), variables).Evaluate());
-        public void EmitTree(TextWriter writer)
-        {
-            GetStatement().WriteTo(writer);
-        }
+        public void EmitTree(TextWriter writer) => GetStatement().WriteTo(writer);
 
         private BoundBlockStatement GetStatement( ) => Lowerer.Lower(GlobalScope.Statement);
     }
