@@ -1,5 +1,6 @@
 using System.Text;
 
+using Compiler.CodeAnalysis.Symbols;
 using Compiler.CodeAnalysis.Text;
 
 namespace Compiler.CodeAnalysis.Syntax
@@ -115,7 +116,7 @@ namespace Compiler.CodeAnalysis.Syntax
             int length = _position - _start;
             string text = _text.ToString(_start, length);
             if (!int.TryParse(text, out int value))
-                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, typeof(int));
+                _diagnostics.ReportInvalidNumber(new TextSpan(_start, length), text, TypeSymbol.Int);
             _value = value;
             _kind = SyntaxKind.NumberToken;
         }

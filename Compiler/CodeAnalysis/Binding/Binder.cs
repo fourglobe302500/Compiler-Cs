@@ -4,13 +4,16 @@ using System.Collections.Immutable;
 
 using Compiler.CodeAnalysis.Symbols;
 using Compiler.CodeAnalysis.Syntax;
+
 namespace Compiler.CodeAnalysis.Binding
 {
     internal sealed class Binder
     {
         private readonly DiagnosticBag _diagnostics = new DiagnosticBag();
         private BoundScope _scope;
+
         public Binder(BoundScope parent) => _scope = new BoundScope(parent);
+
         public static BoundGlobalScope BindGlobalScope(BoundGlobalScope previous, CompilationUnitSyntax syntax)
         {
             Binder binder = new Binder(CreateParentScopes(previous));
@@ -24,6 +27,7 @@ namespace Compiler.CodeAnalysis.Binding
                 binder._scope.Variables,
                 expression);
         }
+
         private static BoundScope CreateParentScopes(BoundGlobalScope previous)
         {
             Stack<BoundGlobalScope> stack = new Stack<BoundGlobalScope>();
@@ -42,6 +46,7 @@ namespace Compiler.CodeAnalysis.Binding
             return parent;
         }
         public DiagnosticBag Diagnostics => _diagnostics;
+
         private BoundStatement BindStatement(StatementSyntax syntax) => syntax.Kind switch {
             SyntaxKind.BlockStatement => BindBlockStatement((BlockStatementSyntax)syntax),
             SyntaxKind.VariableDeclaration => BindVariableDeclaration((VariableDeclarationSyntax)syntax),
@@ -51,6 +56,7 @@ namespace Compiler.CodeAnalysis.Binding
             SyntaxKind.ExpressionStatement => BindExpressionStatement((ExpressionStatementSyntax)syntax),
             _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
         };
+
         private BoundBlockStatement BindBlockStatement(BlockStatementSyntax syntax)
         {
             ImmutableArray<BoundStatement>.Builder statements = ImmutableArray.CreateBuilder<BoundStatement>();
@@ -59,6 +65,7 @@ namespace Compiler.CodeAnalysis.Binding
             _scope = _scope.Parent;
             return new BoundBlockStatement(statements.ToImmutable());
         }
+
         private BoundVariableDeclaration BindVariableDeclaration(VariableDeclarationSyntax syntax)
         {
             BoundExpression initializer = BindExpression(syntax.Initializer);
@@ -67,38 +74,44 @@ namespace Compiler.CodeAnalysis.Binding
                 _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, syntax.Identifier.Text);
             return new BoundVariableDeclaration(variable, initializer);
         }
+
         private BoundIfStatement BindIfStatement(IfStatementSyntax syntax)
         {
-            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
             var thenStatement = BindStatement(syntax.ThenStatement);
             var elseStatement = syntax.ElseClause == null ? null : BindStatement(syntax.ElseClause.Code);
             return new BoundIfStatement(condition, thenStatement, elseStatement);
         }
+
         private BoundWhileStatement BindWhileStatement(WhileStatementSyntax syntax)
         {
-            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
             var whileStatement = BindStatement(syntax.WhileStatement);
             return new BoundWhileStatement(condition, whileStatement);
         }
+
         private BoundForStatement BindForStatement(ForStatementSyntax syntax)
         {
             _scope = new BoundScope(_scope);
             var declarationStatement = BindStatement(syntax.DeclaritionStatement);
-            var condition = BindExpression(syntax.Condition, typeof(bool));
+            var condition = BindExpression(syntax.Condition, TypeSymbol.Bool);
             var incrementExpression = BindExpression(syntax.IncrementExpression);
             var forStatement = BindStatement(syntax.ForStatement);
             _scope = _scope.Parent;
             return new BoundForStatement(declarationStatement, condition, incrementExpression, forStatement);
         }
+
         private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
             => new BoundExpressionStatement(BindExpression(syntax.Expression));
-        private BoundExpression BindExpression(ExpressionSyntax syntax, Type returnType)
+
+        private BoundExpression BindExpression(ExpressionSyntax syntax, TypeSymbol returnType)
         {
             var result = BindExpression(syntax);
             if (result.Type != returnType)
                 _diagnostics.ReportCannotConvert(syntax.Span, result.Type, returnType);
             return result;
         }
+
         private BoundExpression BindExpression(ExpressionSyntax syntax) => syntax.Kind switch {
             SyntaxKind.LiteralExpression => BindLiteralExpression((LiteralExpressionSyntax)syntax),
             SyntaxKind.ParenthesizedExpression => BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax),
@@ -108,8 +121,10 @@ namespace Compiler.CodeAnalysis.Binding
             SyntaxKind.BinaryExpression => BindBinaryExpression((BinaryExpressionSyntax)syntax),
             _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
         };
-        private BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
+
+        private static BoundExpression BindLiteralExpression(LiteralExpressionSyntax syntax)
           => new BoundLiteralExpression(syntax.Value ?? 0);
+
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
             string name = syntax.IdentifierToken.Text;
@@ -122,6 +137,7 @@ namespace Compiler.CodeAnalysis.Binding
             }
             return new BoundVariableExpression(variable);
         }
+
         private BoundExpression BindAssigmentxpression(AssigmentExpressionSyntax syntax)
         {
             BoundExpression boundExpression = BindExpression(syntax.Expression);
@@ -139,6 +155,7 @@ namespace Compiler.CodeAnalysis.Binding
             }
             return new BoundAssigmentExpression(variable, boundExpression);
         }
+
         private BoundExpression BindUnaryExpression(UnaryExpressionSyntax syntax)
         {
             BoundExpression boundOperand = BindExpression(syntax.Operand);
@@ -150,6 +167,7 @@ namespace Compiler.CodeAnalysis.Binding
             }
             return new BoundUnaryExpression(boundOperator, boundOperand);
         }
+
         private BoundExpression BindBinaryExpression(BinaryExpressionSyntax syntax)
         {
             BoundExpression boundLeft = BindExpression(syntax.Left);
@@ -162,6 +180,7 @@ namespace Compiler.CodeAnalysis.Binding
             }
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
         }
+
         private BoundExpression BindParenthesizedExpression(ParenthesizedExpressionSyntax syntax) => BindExpression(syntax.Expression);
     }
 }

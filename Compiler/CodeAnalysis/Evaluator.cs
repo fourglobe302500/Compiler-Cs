@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 
 using Compiler.CodeAnalysis.Binding;
 using Compiler.CodeAnalysis.Symbols;
@@ -12,11 +11,13 @@ namespace Compiler.CodeAnalysis
         private readonly Dictionary<VariableSymbol, object> _variables;
         private readonly BoundBlockStatement _root;
         private object _lastValue;
+
         public Evaluator(BoundBlockStatement root, Dictionary<VariableSymbol, object> variables)
         {
             _root = root;
             _variables = variables;
         }
+
         public object Evaluate( )
         {
             var labelToIndex = new Dictionary<BoundLabel, int>();
@@ -51,6 +52,7 @@ namespace Compiler.CodeAnalysis
             }
             return _lastValue;
         }
+
         private void EvaluateVariableDeclaration(BoundVariableDeclaration statement)
         {
             var value = EvaluateExpression(statement.Initializer);
@@ -59,6 +61,7 @@ namespace Compiler.CodeAnalysis
         }
 
         private void EvaluateExpressionStatement(BoundExpressionStatement statement) => _lastValue = EvaluateExpression(statement.Expression);
+
         private object EvaluateExpression(BoundExpression node) => node switch {
             BoundLiteralExpression l => EvaluateLiteralExpression(l),
             BoundVariableExpression v => EvaluateVariableExpression(v),
@@ -67,9 +70,13 @@ namespace Compiler.CodeAnalysis
             BoundBinaryExpression b => EvaluateBinaryExpression(b),
             _ => throw new Exception($"Unexpected node {node.Kind}"),
         };
+
         private static object EvaluateLiteralExpression(BoundLiteralExpression l) => l.Value;
+
         private object EvaluateVariableExpression(BoundVariableExpression v) => _variables[v.Variable];
+
         private object EvaluateAssigmentExpression(BoundAssigmentExpression a) => _variables[a.Variable] = EvaluateExpression(a.Expression);
+
         private object EvaluateUnaryExpression(BoundUnaryExpression u) => u.Op.Kind switch {
             BoundUnaryOperatorKind.Indentity => (int)EvaluateExpression(u.Operand),
             BoundUnaryOperatorKind.Negation => -(int)EvaluateExpression(u.Operand),
@@ -77,6 +84,7 @@ namespace Compiler.CodeAnalysis
             BoundUnaryOperatorKind.OnesComplement => ~(int)EvaluateExpression(u.Operand),
             _ => throw new Exception($"Unexpected unary operator {u.Op}"),
         };
+
         private object EvaluateBinaryExpression(BoundBinaryExpression b) => b.Op.Kind switch {
             BoundBinaryOperatorKind.Addition => (int)EvaluateExpression(b.Left) + (int)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Subtraction => (int)EvaluateExpression(b.Left) - (int)EvaluateExpression(b.Right),
@@ -91,11 +99,11 @@ namespace Compiler.CodeAnalysis
             BoundBinaryOperatorKind.LogicalOr => (bool)EvaluateExpression(b.Left) || (bool)EvaluateExpression(b.Right),
             BoundBinaryOperatorKind.Equals => Equals(EvaluateExpression(b.Left), EvaluateExpression(b.Right)),
             BoundBinaryOperatorKind.Diferent => !Equals(EvaluateExpression(b.Left), EvaluateExpression(b.Right)),
-            BoundBinaryOperatorKind.BitwiseXor => b.Type != typeof(int) ? (bool)EvaluateExpression(b.Left) ^ (bool)EvaluateExpression(b.Right)
+            BoundBinaryOperatorKind.BitwiseXor => b.Type == TypeSymbol.Bool ? (bool)EvaluateExpression(b.Left) ^ (bool)EvaluateExpression(b.Right)
                                                                         : (int)EvaluateExpression(b.Left) ^ (int)EvaluateExpression(b.Right),
-            BoundBinaryOperatorKind.BitwiseOr => b.Type != typeof(int) ? (bool)EvaluateExpression(b.Left) | (bool)EvaluateExpression(b.Right)
+            BoundBinaryOperatorKind.BitwiseOr => b.Type == TypeSymbol.Bool ? (bool)EvaluateExpression(b.Left) | (bool)EvaluateExpression(b.Right)
                                                                        : (int)EvaluateExpression(b.Left) | (int)EvaluateExpression(b.Right),
-            BoundBinaryOperatorKind.BitwiseAnd => b.Type != typeof(int) ? (bool)EvaluateExpression(b.Left) & (bool)EvaluateExpression(b.Right)
+            BoundBinaryOperatorKind.BitwiseAnd => b.Type == TypeSymbol.Bool ? (bool)EvaluateExpression(b.Left) & (bool)EvaluateExpression(b.Right)
                                                                         : (int)EvaluateExpression(b.Left) & (int)EvaluateExpression(b.Right),
             _ => throw new Exception($"Unexpected binary operator {b.Op}"),
         };

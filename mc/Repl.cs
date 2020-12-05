@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Text;
 
 namespace Compiler
 {
@@ -218,6 +217,7 @@ namespace Compiler
             }
         }
 
+
         private void HandleControlEnter(ObservableCollection<string> document, SubmissionView view)
         {
             var start = view.CurrentCharacterIndex;
@@ -324,6 +324,7 @@ namespace Compiler
             }
         }
 
+
         private void HandleHome(ObservableCollection<string> document, SubmissionView view)
             => view.CurrentCharacterIndex = 0;
 
@@ -378,6 +379,7 @@ namespace Compiler
             view.CurrentLineIndex = document.Count - 1;
             view.CurrentCharacterIndex = document[view.CurrentLineIndex].Length;
         }
+
 
         private void HandleTyping(ObservableCollection<string> document, SubmissionView view, string text)
         {
