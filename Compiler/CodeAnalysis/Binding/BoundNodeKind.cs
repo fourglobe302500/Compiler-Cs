@@ -14,6 +14,7 @@ namespace Compiler.CodeAnalysis.Binding
         ExpressionStatement,
 
         //Expressions
+        ErrorExpression,
         LiteralExpression,
         VariableExpression,
         AssigmentExpression,

@@ -41,6 +41,7 @@ namespace Compiler
 
         protected override void EvaluateMetaCommand(string input)
         {
+            Console.ForegroundColor = ConsoleColor.White;
             switch (input)
             {
                 case "#toogleTree":

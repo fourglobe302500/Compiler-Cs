@@ -129,11 +129,11 @@ namespace Compiler.CodeAnalysis.Binding
         {
             string name = syntax.IdentifierToken.Text;
             if (string.IsNullOrEmpty(name))
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             if (!_scope.TryLookup(name, out VariableSymbol variable))
             {
                 _diagnostics.ReportUndefinedName(syntax.IdentifierToken.Span, syntax.IdentifierToken.Text);
-                return new BoundLiteralExpression(0);
+                return new BoundErrorExpression();
             }
             return new BoundVariableExpression(variable);
         }
@@ -160,10 +160,12 @@ namespace Compiler.CodeAnalysis.Binding
         {
             BoundExpression boundOperand = BindExpression(syntax.Operand);
             BoundUnaryOperator boundOperator = BoundUnaryOperator.Bind(syntax.OperatorToken.Kind, boundOperand.Type);
+            if (boundOperand.Kind == BoundNodeKind.ErrorExpression)
+                return new BoundErrorExpression();
             if (boundOperator == null)
             {
                 _diagnostics.ReportUndefinedUnaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundOperand.Type);
-                return boundOperand;
+                return new BoundErrorExpression();
             }
             return new BoundUnaryExpression(boundOperator, boundOperand);
         }
@@ -172,11 +174,13 @@ namespace Compiler.CodeAnalysis.Binding
         {
             BoundExpression boundLeft = BindExpression(syntax.Left);
             BoundExpression boundRight = BindExpression(syntax.Right);
+            if (boundLeft.Kind == BoundNodeKind.ErrorExpression || boundRight.Kind == BoundNodeKind.ErrorExpression)
+                return new BoundErrorExpression();
             BoundBinaryOperator boundOperator = BoundBinaryOperator.Bind(syntax.OperatorToken.Kind, boundLeft.Type, boundRight.Type);
             if (boundOperator == null)
             {
                 _diagnostics.ReportUndefinedBinaryOperator(syntax.OperatorToken.Span, syntax.OperatorToken.Text, boundLeft.Type, boundRight.Type);
-                return boundLeft;
+                return new BoundErrorExpression();
             }
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
         }
