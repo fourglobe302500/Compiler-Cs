@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -7,6 +6,7 @@ using System.Threading;
 
 using Compiler.CodeAnalysis.Binding;
 using Compiler.CodeAnalysis.Lowering;
+using Compiler.CodeAnalysis.Symbols;
 using Compiler.CodeAnalysis.Syntax;
 namespace Compiler.CodeAnalysis
 {

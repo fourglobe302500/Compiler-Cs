@@ -8,6 +8,7 @@ namespace Compiler.CodeAnalysis.Syntax
         IdentifierToken,
         WhiteSpaceToken,
         NumberToken,
+        StringToken,
         CloseParenthesisToken,
         OpenParenthesisToken,
         OpenBraceToken,

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 
 using Compiler.CodeAnalysis;
+using Compiler.CodeAnalysis.Symbols;
 using Compiler.CodeAnalysis.Syntax;
 
 using Xunit;
@@ -141,7 +142,7 @@ namespace Compiler.Tests.CodeAnalysis
             ";
 
             var diagnostics = @"
-                Cannot convert type 'System.Boolean' to 'System.Int32'.
+                Cannot convert type 'bool' to 'int'.
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -152,7 +153,7 @@ namespace Compiler.Tests.CodeAnalysis
             var text = @"[+]true;";
 
             var diagnostics = @"
-                Unary operator '+' is not defined for type 'System.Boolean'.
+                Unary operator '+' is not defined for type 'bool'.
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -169,7 +170,7 @@ namespace Compiler.Tests.CodeAnalysis
             ";
 
             var diagnostics = @"
-                Cannot convert type 'System.Int32' to 'System.Boolean'.
+                Cannot convert type 'int' to 'bool'.
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -186,7 +187,7 @@ namespace Compiler.Tests.CodeAnalysis
             ";
 
             var diagnostics = @"
-                Cannot convert type 'System.Int32' to 'System.Boolean'.
+                Cannot convert type 'int' to 'bool'.
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -202,7 +203,7 @@ namespace Compiler.Tests.CodeAnalysis
             ";
 
             var diagnostics = @"
-                Cannot convert type 'System.Int32' to 'System.Boolean'.
+                Cannot convert type 'int' to 'bool'.
             ";
 
             AssertDiagnostics(text, diagnostics);
@@ -213,7 +214,7 @@ namespace Compiler.Tests.CodeAnalysis
             var text = @"10 [+] false;";
 
             var diagnostics = @"
-                Binary operator '+' is not defined for types 'System.Int32' and 'System.Boolean'.
+                Binary operator '+' is not defined for types 'int' and 'bool'.
             ";
 
             AssertDiagnostics(text, diagnostics);

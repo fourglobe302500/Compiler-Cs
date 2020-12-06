@@ -4,6 +4,7 @@ using System.Collections.Immutable;
 using System.Linq;
 
 using Compiler.CodeAnalysis;
+using Compiler.CodeAnalysis.Symbols;
 using Compiler.CodeAnalysis.Syntax;
 using Compiler.CodeAnalysis.Text;
 
@@ -40,6 +41,7 @@ namespace Compiler
 
         protected override void EvaluateMetaCommand(string input)
         {
+            Console.ForegroundColor = ConsoleColor.White;
             switch (input)
             {
                 case "#toogleTree":
@@ -71,9 +73,9 @@ namespace Compiler
         }
 
         protected override bool IsCompleteSubmission(string text)
-            => string.IsNullOrEmpty(text) || !GetLastToken(SyntaxTree.Parse(text).Root.Statement).IsMissing;
-
-        private static SyntaxToken GetLastToken(SyntaxNode node) => node is SyntaxToken token ? token : GetLastToken(node.GetChildren().Last());
+            => string.IsNullOrEmpty(text)
+               || text.Split(Environment.NewLine).Reverse().TakeWhile(s => string.IsNullOrEmpty(s)).Count() >= 2
+               || !SyntaxTree.Parse(text).Root.Statement.GetLastToken().IsMissing;
 
         protected override void EvaluateSubmission(string text)
         {

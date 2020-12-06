@@ -17,6 +17,7 @@ namespace Compiler.CodeAnalysis.Binding
             BoundNodeKind.ExpressionStatement => RewriteExpressionStatement((BoundExpressionStatement)node),
             _ => throw new Exception($"Unexpected node: {node.Kind}"),
         };
+
         protected virtual BoundStatement RewriteBlockStatement(BoundBlockStatement node)
         {
             ImmutableArray<BoundStatement>.Builder builder = null;
@@ -35,11 +36,13 @@ namespace Compiler.CodeAnalysis.Binding
             }
             return builder == null ? node : new BoundBlockStatement(builder.MoveToImmutable());
         }
+
         protected virtual BoundStatement RewriteVariableDeclaration(BoundVariableDeclaration node)
         {
             var initializer = RewriteExpression(node.Initializer);
             return initializer == node.Initializer ? node : new BoundVariableDeclaration(node.Variable, initializer);
         }
+
         protected virtual BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
             var condition = RewriteExpression(node.Condition);
@@ -48,12 +51,14 @@ namespace Compiler.CodeAnalysis.Binding
             return condition == node.Condition && thenStatement == node.ThenStatement && elseStatement == node.ElseStatement
                 ? node : new BoundIfStatement(condition, thenStatement, elseStatement);
         }
+
         protected virtual BoundStatement RewriteWhileStatement(BoundWhileStatement node)
         {
             var condition = RewriteExpression(node.Condition);
             var whileStatement = RewriteStatement(node.WhileStatement);
             return condition == node.Condition && whileStatement == node.WhileStatement ? node : new BoundWhileStatement(condition, whileStatement);
         }
+
         protected virtual BoundStatement RewriteForStatement(BoundForStatement node)
         {
             var declarationStatement = RewriteStatement(node.DeclarationStatement);
@@ -63,19 +68,25 @@ namespace Compiler.CodeAnalysis.Binding
             return declarationStatement == node.DeclarationStatement && condition == node.Condition && increment == node.Increment && forStatement == node.ForStatement
                 ? node : new BoundForStatement(declarationStatement, condition, increment, forStatement);
         }
+
         protected virtual BoundStatement RewriteLabelStatement(BoundLabelStatement node) => node;
+
         protected virtual BoundStatement RewriteGotoStatement(BoundGotoStatement node) => node;
+
         protected virtual BoundStatement RewriteConditionalGotoStatement(BoundConditionalGotoStatement node)
         {
             var condition = RewriteExpression(node.Condition);
             return condition == node.Condition ? node : new BoundConditionalGotoStatement(node.Label, condition, node.JumpIfTrue);
         }
+
         protected virtual BoundStatement RewriteExpressionStatement(BoundExpressionStatement node)
         {
             var expression = RewriteExpression(node.Expression);
             return expression == node.Expression ? node : new BoundExpressionStatement(expression);
         }
+
         public virtual BoundExpression RewriteExpression(BoundExpression node) => node.Kind switch {
+            BoundNodeKind.ErrorExpression => RewriteErrorExpression((BoundErrorExpression)node),
             BoundNodeKind.LiteralExpression => RewriteLiteralExpression((BoundLiteralExpression)node),
             BoundNodeKind.VariableExpression => RewriteVariableExpression((BoundVariableExpression)node),
             BoundNodeKind.AssigmentExpression => RewriteAssigmentExpression((BoundAssigmentExpression)node),
@@ -83,18 +94,25 @@ namespace Compiler.CodeAnalysis.Binding
             BoundNodeKind.BinaryExpression => RewriteBinaryExpression((BoundBinaryExpression)node),
             _ => throw new Exception($"Unexpected node: {node.Kind}"),
         };
+
+        protected virtual BoundExpression RewriteErrorExpression(BoundErrorExpression node) => node;
+
         protected virtual BoundExpression RewriteLiteralExpression(BoundLiteralExpression node) => node;
+
         protected virtual BoundExpression RewriteVariableExpression(BoundVariableExpression node) => node;
+
         protected virtual BoundExpression RewriteAssigmentExpression(BoundAssigmentExpression node)
         {
             var expression = RewriteExpression(node.Expression);
             return expression == node.Expression ? node : new BoundAssigmentExpression(node.Variable, expression);
         }
+
         protected virtual BoundExpression RewriteUnaryExpression(BoundUnaryExpression node)
         {
             var operand = RewriteExpression(node.Operand);
             return operand == node.Operand ? node : new BoundUnaryExpression(node.Op, operand);
         }
+
         protected virtual BoundExpression RewriteBinaryExpression(BoundBinaryExpression node)
         {
             var left = RewriteExpression(node.Left);
