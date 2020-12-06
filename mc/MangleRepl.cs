@@ -21,7 +21,7 @@ namespace Compiler
         {
             if (line.StartsWith('#'))
             {
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.Write(line);
                 return;
             }
@@ -31,10 +31,10 @@ namespace Compiler
                 Console.ForegroundColor = token.Kind switch {
                     var keyKind when SyntaxFacts.GetKeywords().Contains(keyKind) => ConsoleColor.Blue,
                     SyntaxKind.StringToken => ConsoleColor.Magenta,
-                    SyntaxKind.IdentifierToken => ConsoleColor.DarkYellow,
+                    SyntaxKind.IdentifierToken => ConsoleColor.Yellow,
                     SyntaxKind.NumberToken => ConsoleColor.Cyan,
                     SyntaxKind.InvalidToken => ConsoleColor.Red,
-                    _ => ConsoleColor.Gray,
+                    _ => ConsoleColor.DarkGray,
                 };
                 Console.Write(token.Text);
             }
