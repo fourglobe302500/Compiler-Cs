@@ -68,6 +68,7 @@ namespace Compiler.CodeAnalysis
             BoundAssigmentExpression a => EvaluateAssigmentExpression(a),
             BoundUnaryExpression u => EvaluateUnaryExpression(u),
             BoundBinaryExpression b => EvaluateBinaryExpression(b),
+            BoundCallExpression c => EvaluateCallExpression(c),
             _ => throw new Exception($"Unexpected node {node.Kind}"),
         };
 
@@ -108,5 +109,20 @@ namespace Compiler.CodeAnalysis
                                                                              : (int)EvaluateExpression(b.Left) & (int)EvaluateExpression(b.Right),
             _ => throw new Exception($"Unexpected binary operator {b.Op}"),
         };
+
+        private object EvaluateCallExpression(BoundCallExpression c)
+        {
+            if (c.Function == BuiltinFunctions.Input)
+            {
+                return Console.ReadLine();
+            }
+            else if (c.Function == BuiltinFunctions.PrintInt || c.Function == BuiltinFunctions.PrintString)
+            {
+                Console.WriteLine(EvaluateExpression(c.Arguments[0]));
+                return null;
+            }
+            else
+                throw new Exception($"Unexpected function call {c.Function.Name}");
+        }
     }
 }

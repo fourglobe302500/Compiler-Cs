@@ -20,5 +20,6 @@ namespace Compiler.CodeAnalysis.Binding
         AssigmentExpression,
         UnaryExpression,
         BinaryExpression,
+        CallExpression,
     }
 }

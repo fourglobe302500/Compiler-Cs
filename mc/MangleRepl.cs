@@ -91,9 +91,12 @@ namespace Compiler
             ImmutableArray<Diagnostic> diagnostics = result.Diagnostics;
             if (!diagnostics.Any())
             {
-                Console.ForegroundColor = ConsoleColor.White;
-                Console.WriteLine(result.Value);
-                Console.ResetColor();
+                if (result.Value != null)
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(result.Value);
+                    Console.ResetColor();
+                }
                 _state = compilation;
             }
             else
