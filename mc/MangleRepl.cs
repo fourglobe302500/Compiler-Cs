@@ -30,10 +30,11 @@ namespace Compiler
             {
                 Console.ForegroundColor = token.Kind switch {
                     var keyKind when SyntaxFacts.GetKeywords().Contains(keyKind) => ConsoleColor.Blue,
+                    SyntaxKind.StringToken => ConsoleColor.Magenta,
                     SyntaxKind.IdentifierToken => ConsoleColor.DarkYellow,
-                    SyntaxKind.NumberToken => ConsoleColor.Magenta,
+                    SyntaxKind.NumberToken => ConsoleColor.Cyan,
                     SyntaxKind.InvalidToken => ConsoleColor.Red,
-                    _ => ConsoleColor.Cyan,
+                    _ => ConsoleColor.Gray,
                 };
                 Console.Write(token.Text);
             }
@@ -90,7 +91,7 @@ namespace Compiler
             ImmutableArray<Diagnostic> diagnostics = result.Diagnostics;
             if (!diagnostics.Any())
             {
-                Console.ForegroundColor = ConsoleColor.Magenta;
+                Console.ForegroundColor = ConsoleColor.White;
                 Console.WriteLine(result.Value);
                 Console.ResetColor();
                 _state = compilation;
