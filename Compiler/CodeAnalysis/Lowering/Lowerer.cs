@@ -8,11 +8,14 @@ namespace Compiler.CodeAnalysis.Lowering
     internal sealed class Lowerer : BoundTreeRewriter
     {
         private int _labelCount;
+
         private Lowerer( )
         {
         }
         private BoundLabel NewLabel => new BoundLabel($"Label{++_labelCount}");
+
         public static BoundBlockStatement Lower(BoundStatement statement) => Flatten(new Lowerer().RewriteStatement(statement));
+
         private static BoundBlockStatement Flatten(BoundStatement statement)
         {
             var builder = ImmutableArray.CreateBuilder<BoundStatement>();
@@ -29,6 +32,7 @@ namespace Compiler.CodeAnalysis.Lowering
             }
             return new BoundBlockStatement(builder.ToImmutable());
         }
+
         protected override BoundStatement RewriteIfStatement(BoundIfStatement node)
         {
             if (node.ElseStatement == null)
@@ -53,6 +57,7 @@ namespace Compiler.CodeAnalysis.Lowering
                 return RewriteStatement(result);
             }
         }
+
         protected override BoundStatement RewriteWhileStatement(BoundWhileStatement node)
         {
             var checkLabel = NewLabel;
@@ -67,10 +72,11 @@ namespace Compiler.CodeAnalysis.Lowering
                 checkGoto, loopLabelStatement, node.WhileStatement, checkLabelStatement, loopGotoTrue, endLabelStatement));
             return RewriteStatement(result);
         }
+
         protected override BoundStatement RewriteForStatement(BoundForStatement node)
         {
-            var variableDeclaration = (BoundVariableDeclaration)node.DeclarationStatement;
-            var condition = (BoundBinaryExpression)node.Condition;
+            var variableDeclaration = node.DeclarationStatement;
+            var condition = node.Condition;
             var increment = new BoundExpressionStatement(node.Increment);
             var whileBody = new BoundBlockStatement(ImmutableArray.Create<BoundStatement>(node.ForStatement, increment));
             var whileStatement = new BoundWhileStatement(condition, whileBody);

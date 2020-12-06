@@ -69,8 +69,8 @@ namespace Compiler.CodeAnalysis.Binding
         private BoundVariableDeclaration BindVariableDeclaration(VariableDeclarationSyntax syntax)
         {
             BoundExpression initializer = BindExpression(syntax.Initializer);
-            VariableSymbol variable = new VariableSymbol(syntax.Identifier.Text, syntax.Keyword.Kind == SyntaxKind.DefKeyword, initializer.Type);
-            if (!_scope.TryDeclare(variable))
+            VariableSymbol variable = new VariableSymbol(syntax.Identifier.Text ?? "?", syntax.Keyword.Kind == SyntaxKind.DefKeyword, initializer.Type);
+            if (!syntax.Identifier.IsMissing && !_scope.TryDeclare(variable))
                 _diagnostics.ReportVariableAlreadyDeclared(syntax.Identifier.Span, syntax.Identifier.Text);
             return new BoundVariableDeclaration(variable, initializer);
         }
@@ -107,7 +107,7 @@ namespace Compiler.CodeAnalysis.Binding
         private BoundExpression BindExpression(ExpressionSyntax syntax, TypeSymbol returnType)
         {
             var result = BindExpression(syntax);
-            if (result.Type != returnType)
+            if (returnType != TypeSymbol.Error && result.Type != TypeSymbol.Error && result.Type != returnType)
                 _diagnostics.ReportCannotConvert(syntax.Span, result.Type, returnType);
             return result;
         }
@@ -128,7 +128,7 @@ namespace Compiler.CodeAnalysis.Binding
         private BoundExpression BindNameExpression(NameExpressionSyntax syntax)
         {
             string name = syntax.IdentifierToken.Text;
-            if (string.IsNullOrEmpty(name))
+            if (syntax.IdentifierToken.IsMissing)
                 return new BoundErrorExpression();
             if (!_scope.TryLookup(name, out VariableSymbol variable))
             {
