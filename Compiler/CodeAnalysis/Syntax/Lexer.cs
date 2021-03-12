@@ -44,6 +44,7 @@ namespace Compiler.CodeAnalysis.Syntax
                 case '^': _kind = SyntaxKind.HatToken; break;
                 case ';': _kind = SyntaxKind.SemiColonToken; break;
                 case '~': _kind = SyntaxKind.TildeToken; break;
+                case ',': _kind = SyntaxKind.CommaToken; break;
                 case '|':
                     if (Lookahead == '|')
                     { _kind = SyntaxKind.PipePipeToken; _ = Walk(1); }

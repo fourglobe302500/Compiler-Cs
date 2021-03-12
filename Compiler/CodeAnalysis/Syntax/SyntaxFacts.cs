@@ -60,6 +60,7 @@ namespace Compiler.CodeAnalysis.Syntax
             SyntaxKind.OpenParenthesisToken => "(",
             SyntaxKind.OpenBraceToken => "{",
             SyntaxKind.CloseBraceToken => "}",
+            SyntaxKind.CommaToken => ",",
             SyntaxKind.PlusToken => "+",
             SyntaxKind.MinusToken => "-",
             SyntaxKind.StarToken => "*",

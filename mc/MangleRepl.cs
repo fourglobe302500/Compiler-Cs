@@ -21,7 +21,7 @@ namespace Compiler
         {
             if (line.StartsWith('#'))
             {
-                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                Console.ForegroundColor = ConsoleColor.Magenta;
                 Console.Write(line);
                 return;
             }
@@ -30,10 +30,11 @@ namespace Compiler
             {
                 Console.ForegroundColor = token.Kind switch {
                     var keyKind when SyntaxFacts.GetKeywords().Contains(keyKind) => ConsoleColor.Blue,
-                    SyntaxKind.IdentifierToken => ConsoleColor.DarkYellow,
-                    SyntaxKind.NumberToken => ConsoleColor.Magenta,
+                    SyntaxKind.StringToken => ConsoleColor.Magenta,
+                    SyntaxKind.IdentifierToken => ConsoleColor.Yellow,
+                    SyntaxKind.NumberToken => ConsoleColor.Cyan,
                     SyntaxKind.InvalidToken => ConsoleColor.Red,
-                    _ => ConsoleColor.Cyan,
+                    _ => ConsoleColor.DarkGray,
                 };
                 Console.Write(token.Text);
             }
@@ -90,9 +91,12 @@ namespace Compiler
             ImmutableArray<Diagnostic> diagnostics = result.Diagnostics;
             if (!diagnostics.Any())
             {
-                Console.ForegroundColor = ConsoleColor.Magenta;
-                Console.WriteLine(result.Value);
-                Console.ResetColor();
+                if (result.Value != null)
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.WriteLine(result.Value);
+                    Console.ResetColor();
+                }
                 _state = compilation;
             }
             else

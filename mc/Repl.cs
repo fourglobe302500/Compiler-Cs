@@ -300,7 +300,7 @@ namespace Compiler
         {
             var lineIndex = view.CurrentLineIndex;
             var start = view.CurrentCharacterIndex;
-            if (lineIndex < document.Count - 1)
+            if (lineIndex < document.Count - 1 && start == document[lineIndex].Length)
             {
                 var nextLine = document[lineIndex + 1];
                 document.RemoveAt(lineIndex + 1);

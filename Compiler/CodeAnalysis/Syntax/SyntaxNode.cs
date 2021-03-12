@@ -24,6 +24,11 @@ namespace Compiler.CodeAnalysis.Syntax
                     if (child != null)
                         yield return child;
                 }
+                else if (typeof(SeparatedSyntaxList).IsAssignableFrom(property.PropertyType))
+                {
+                    foreach (SyntaxNode child in ((SeparatedSyntaxList)property.GetValue(this)).GetWithSeparators())
+                        yield return child;
+                }
                 else if (typeof(IEnumerable<SyntaxNode>).IsAssignableFrom(property.PropertyType))
                 {
                     foreach (SyntaxNode child in (IEnumerable<SyntaxNode>)property.GetValue(this))

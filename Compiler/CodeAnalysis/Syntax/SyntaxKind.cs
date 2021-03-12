@@ -9,6 +9,7 @@ namespace Compiler.CodeAnalysis.Syntax
         WhiteSpaceToken,
         NumberToken,
         StringToken,
+        CommaToken,
         CloseParenthesisToken,
         OpenParenthesisToken,
         OpenBraceToken,
@@ -35,6 +36,7 @@ namespace Compiler.CodeAnalysis.Syntax
         UnaryExpression,
         BinaryExpression,
         ParenthesizedExpression,
+        CallExpression,
 
         //Keywords
         TrueKeyword,

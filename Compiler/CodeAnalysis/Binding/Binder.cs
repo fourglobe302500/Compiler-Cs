@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 using Compiler.CodeAnalysis.Symbols;
 using Compiler.CodeAnalysis.Syntax;
@@ -102,7 +103,7 @@ namespace Compiler.CodeAnalysis.Binding
         }
 
         private BoundExpressionStatement BindExpressionStatement(ExpressionStatementSyntax syntax)
-            => new BoundExpressionStatement(BindExpression(syntax.Expression));
+            => new BoundExpressionStatement(BindExpression(syntax.Expression, canBeVoid: true));
 
         private BoundExpression BindExpression(ExpressionSyntax syntax, TypeSymbol returnType)
         {
@@ -112,13 +113,25 @@ namespace Compiler.CodeAnalysis.Binding
             return result;
         }
 
-        private BoundExpression BindExpression(ExpressionSyntax syntax) => syntax.Kind switch {
+        private BoundExpression BindExpression(ExpressionSyntax syntax, bool canBeVoid = false)
+        {
+            var result = BindExpressionInternal(syntax);
+            if (!canBeVoid && result.Type == TypeSymbol.Void)
+            {
+                _diagnostics.ReportExpressionMustHaveValue(syntax.Span);
+                return new BoundErrorExpression();
+            }
+            return result;
+        }
+
+        private BoundExpression BindExpressionInternal(ExpressionSyntax syntax) => syntax.Kind switch {
             SyntaxKind.LiteralExpression => BindLiteralExpression((LiteralExpressionSyntax)syntax),
             SyntaxKind.ParenthesizedExpression => BindParenthesizedExpression((ParenthesizedExpressionSyntax)syntax),
             SyntaxKind.NameExpression => BindNameExpression((NameExpressionSyntax)syntax),
             SyntaxKind.AssigmentExpression => BindAssigmentxpression((AssigmentExpressionSyntax)syntax),
             SyntaxKind.UnaryExpression => BindUnaryExpression((UnaryExpressionSyntax)syntax),
             SyntaxKind.BinaryExpression => BindBinaryExpression((BinaryExpressionSyntax)syntax),
+            SyntaxKind.CallExpression => BindCallExpression((CallExpressionSyntax)syntax),
             _ => throw new Exception($"Unexpected syntax {syntax.Kind}"),
         };
 
@@ -183,6 +196,46 @@ namespace Compiler.CodeAnalysis.Binding
                 return new BoundErrorExpression();
             }
             return new BoundBinaryExpression(boundLeft, boundOperator, boundRight);
+        }
+
+        private BoundExpression BindCallExpression(CallExpressionSyntax syntax)
+        {
+            var functions = BuiltinFunctions.All;
+            var functionSameName = functions.Where(f => f.Name == syntax.Identifier.Text);
+            if (!functionSameName.Any())
+            {
+                _diagnostics.ReportUndefinedFunction(syntax.Identifier.Span, syntax.Identifier.Text);
+                return new BoundErrorExpression();
+            }
+            var functionSameNumber = functionSameName.Where(f => f.Parameters.Length == syntax.Arguments.Count);
+            if (!functionSameNumber.Any())
+            {
+                _diagnostics.ReportUndefinedFunctionForNumberOfArguments(syntax.Identifier.Span, syntax.Identifier.Text, syntax.Arguments.Count);
+                return new BoundErrorExpression();
+            }
+            var args = ImmutableArray.CreateBuilder<BoundExpression>();
+            foreach (var arg in syntax.Arguments)
+            {
+                args.Add(BindExpression(arg));
+            }
+            var arguments = args.ToImmutable();
+            var sameFunction = functionSameNumber.SingleOrDefault(f => Match(f.Parameters, arguments));
+            if (sameFunction == null)
+            {
+                _diagnostics.ReportInvalidSetOfArgs(syntax.Identifier.Span, syntax.Identifier.Text, arguments);
+                return new BoundErrorExpression();
+            }
+            return new BoundCallExpression(sameFunction, arguments);
+        }
+
+        private static bool Match(ImmutableArray<ParameterSymbol> parameters, ImmutableArray<BoundExpression> arguments)
+        {
+            for (var i = 0; i < parameters.Length; i++)
+            {
+                if (parameters[i].Type != arguments[i].Type)
+                    return false;
+            }
+            return true;
         }
 
         private BoundExpression BindParenthesizedExpression(ParenthesizedExpressionSyntax syntax) => BindExpression(syntax.Expression);
