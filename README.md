@@ -1,5 +1,7 @@
 # Compiler-cs
 
-This is the compiler i'm making to create my own language.
+This Compiler is my very first project
 
-if you are reading this i either have made my language an open source or you hacked my github acount.
+Made for no expecific language. Made by following a youtuber making his version of this same compiler on [this series of videos](https://www.youtube.com/playlist?list=PLRAdsfhKI4OWNOSfS7EUu5GRAVmze1t2y)
+
+Stopped developting on lowering, never make it got to exporting a exe file.
